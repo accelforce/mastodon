@@ -24,6 +24,7 @@ Production branch of [odakyudon](#odakyudon-instance).
 
 Includes these branches below.
 
+* [custom/auto-media-remove](#customauto-media-remove)
 * [custom/cat](#customcat)
 * [custom/everyone](#customeveryone)
 * [custom/odakyudon](#customodakyudon)
@@ -44,6 +45,10 @@ Includes these branches below.
 * [custom/everyone](#customeveryone)
 * [custom/nitiasadon](#customnitiasadon)
 * [custom/quote](#customquote)
+
+### [custom/auto-media-remove](https://github.com/accelforce/mastodon/tree/custom/auto-media-remove)
+
+Feature branch of automated media removal feature.
 
 ### [custom/cat](https://github.com/accelforce/mastodon/tree/custom/cat)
 
