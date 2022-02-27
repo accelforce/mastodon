@@ -212,6 +212,8 @@ Rails.application.routes.draw do
     resource :settings, only: [:edit, :update]
     resources :site_uploads, only: [:destroy]
 
+    resource :media_remove, only: [:edit, :update], controller: :media_remove
+
     resources :invites, only: [:index, :create, :destroy] do
       collection do
         post :deactivate_all
