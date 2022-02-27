@@ -555,6 +555,14 @@ en:
         title: Create new IP rule
       no_ip_block_selected: No IP rules were changed as none were selected
       title: IP rules
+    media_remove:
+      days:
+        desc_html: How old media attachments have to be before they are removed.
+        title: Days
+      enabled:
+        desc_html: If enabled, automatically removes locally cached copies of media attachments from other servers everyday.
+        title: Automatically remove old remote media files
+      title: Automated media removal
     relationships:
       title: "%{acct}'s relationships"
     relays:
