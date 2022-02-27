@@ -161,6 +161,7 @@ class PrivacyDropdown extends React.PureComponent {
     onChange: PropTypes.func.isRequired,
     noDirect: PropTypes.bool,
     container: PropTypes.func,
+    disabled: PropTypes.bool,
     intl: PropTypes.object.isRequired,
   };
 
@@ -250,7 +251,7 @@ class PrivacyDropdown extends React.PureComponent {
   }
 
   render () {
-    const { value, container, intl } = this.props;
+    const { value, container, disabled, intl } = this.props;
     const { open, placement } = this.state;
 
     const valueOption = this.options.find(item => item.value === value);
@@ -270,6 +271,7 @@ class PrivacyDropdown extends React.PureComponent {
             onMouseDown={this.handleMouseDown}
             onKeyDown={this.handleButtonKeyDown}
             style={{ height: null, lineHeight: '27px' }}
+            disabled={disabled}
           />
         </div>
 
