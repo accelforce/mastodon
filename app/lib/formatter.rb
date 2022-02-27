@@ -40,7 +40,7 @@ class Formatter
     html = encode_custom_emojis(html, status.emojis + status.avatar_emojis, options[:autoplay]) if options[:custom_emojify]
     html = simple_format(html, {}, sanitize: false)
     html = nyaize(html) if options[:nyaize]
-    html = quotify(html, status) if status.quote? && !options[:escape_quotify]
+    html = quotify(html, status) if status.respond_to?(:quote?) && status.quote? && !options[:escape_quotify]
     html = html.delete("\n")
 
     html.html_safe # rubocop:disable Rails/OutputSafety
