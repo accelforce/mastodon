@@ -71,6 +71,8 @@ export const INIT_MEDIA_EDIT_MODAL = 'INIT_MEDIA_EDIT_MODAL';
 export const COMPOSE_CHANGE_MEDIA_DESCRIPTION = 'COMPOSE_CHANGE_MEDIA_DESCRIPTION';
 export const COMPOSE_CHANGE_MEDIA_FOCUS       = 'COMPOSE_CHANGE_MEDIA_FOCUS';
 
+export const COMPOSE_SET_STATUS = 'COMPOSE_SET_STATUS';
+
 const DEFAULT_HASHTAG = 'nitiasa';
 const IGNORE_DEFAULT_HASHTAG = 'notag';
 
@@ -85,6 +87,15 @@ export const ensureComposeIsVisible = (getState, routerHistory) => {
   if (!getState().getIn(['compose', 'mounted']) && window.innerWidth < COMPOSE_PANEL_BREAKPOINT) {
     routerHistory.push('/publish');
   }
+};
+
+export function setComposeToStatus(status, text, spoiler_text) {
+  return{
+    type: COMPOSE_SET_STATUS,
+    status,
+    text,
+    spoiler_text,
+  };
 };
 
 export function changeCompose(text) {
@@ -141,8 +152,9 @@ export function directCompose(account, routerHistory) {
 
 export function submitCompose(routerHistory) {
   return function (dispatch, getState) {
-    const rawStatus = getState().getIn(['compose', 'text'], '');
-    const media     = getState().getIn(['compose', 'media_attachments']);
+    const rawStatus   = getState().getIn(['compose', 'text'], '');
+    const media       = getState().getIn(['compose', 'media_attachments']);
+    const statusId    = getState().getIn(['compose', 'id'], null);
 
     if ((!rawStatus || !rawStatus.length) && media.size === 0) {
       return;
@@ -156,15 +168,18 @@ export function submitCompose(routerHistory) {
 
     dispatch(submitComposeRequest());
 
-    api(getState).post('/api/v1/statuses', {
-      status,
-      in_reply_to_id: getState().getIn(['compose', 'in_reply_to'], null),
-      media_ids: media.map(item => item.get('id')),
-      sensitive: getState().getIn(['compose', 'sensitive']),
-      spoiler_text: getState().getIn(['compose', 'spoiler']) ? getState().getIn(['compose', 'spoiler_text'], '') : '',
-      visibility: getState().getIn(['compose', 'privacy']),
-      poll: getState().getIn(['compose', 'poll'], null),
-    }, {
+    api(getState).request({
+      url: statusId === null ? '/api/v1/statuses' : `/api/v1/statuses/${statusId}`,
+      method: statusId === null ? 'post' : 'put',
+      data: {
+        status,
+        in_reply_to_id: getState().getIn(['compose', 'in_reply_to'], null),
+        media_ids: media.map(item => item.get('id')),
+        sensitive: getState().getIn(['compose', 'sensitive']),
+        spoiler_text: getState().getIn(['compose', 'spoiler']) ? getState().getIn(['compose', 'spoiler_text'], '') : '',
+        visibility: getState().getIn(['compose', 'privacy']),
+        poll: getState().getIn(['compose', 'poll'], null),
+      },
       headers: {
         'Idempotency-Key': getState().getIn(['compose', 'idempotencyKey']),
       },
@@ -186,11 +201,11 @@ export function submitCompose(routerHistory) {
         }
       };
 
-      if (response.data.visibility !== 'direct') {
+      if (statusId === null && response.data.visibility !== 'direct') {
         insertIfOnline('home');
       }
 
-      if (response.data.in_reply_to_id === null && response.data.visibility === 'public') {
+      if (statusId === null && response.data.in_reply_to_id === null && response.data.visibility === 'public') {
         if (addToLocal) {
           insertIfOnline('community');
         }
