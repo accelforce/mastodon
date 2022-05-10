@@ -1,31 +1,54 @@
 # frozen_string_literal: true
 
 class ProcessHashtagsService < BaseService
-  DEFAULT_HASHTAG = "nitiasa"
-  IGNORE_DEFAULT_HASHTAG = "notag"
+  DEFAULT_HASHTAG = 'nitiasa'
+  IGNORE_DEFAULT_HASHTAG = 'notag'
 
-  def call(status, tags = [])
-    records = []
+  def call(status, raw_tags = [])
+    @status        = status
+    @account       = status.account
+    @raw_tags      = status.local? ? local_tags : raw_tags
+    @previous_tags = status.tags.to_a
+    @current_tags  = []
 
-    if status.local?
-      tags = Extractor.extract_hashtags(status.text)
+    assign_tags!
+    update_featured_tags!
+  end
 
-      if !tags.include?(DEFAULT_HASHTAG) && !tags.include?(IGNORE_DEFAULT_HASHTAG) && status.public_visibility? && !status.reply? then
-        tags << DEFAULT_HASHTAG
-        status.update(text: "#{status.text} ##{DEFAULT_HASHTAG}")
+  private
+
+  def local_tags
+    tags = Extractor.extract_hashtags(@status.text)
+
+    if !tags.include?(DEFAULT_HASHTAG) && !tags.include?(IGNORE_DEFAULT_HASHTAG) && @status.public_visibility? && !@status.reply?
+      tags << DEFAULT_HASHTAG
+      @status.update(text: "#{@status.text} ##{DEFAULT_HASHTAG}")
+    end
+
+    tags
+  end
+
+  def assign_tags!
+    @status.tags = @current_tags = Tag.find_or_create_by_names(@raw_tags)
+  end
+
+  def update_featured_tags!
+    return unless @status.distributable?
+
+    added_tags = @current_tags - @previous_tags
+
+    unless added_tags.empty?
+      @account.featured_tags.where(tag_id: added_tags.map(&:id)).each do |featured_tag|
+        featured_tag.increment(@status.created_at)
       end
     end
 
-    Tag.find_or_create_by_names(tags) do |tag|
-      status.tags << tag
-      records << tag
-      tag.update(last_status_at: status.created_at) if tag.last_status_at.nil? || (tag.last_status_at < status.created_at && tag.last_status_at < 12.hours.ago)
-    end
+    removed_tags = @previous_tags - @current_tags
 
-    return unless status.distributable?
-
-    status.account.featured_tags.where(tag_id: records.map(&:id)).each do |featured_tag|
-      featured_tag.increment(status.created_at)
+    unless removed_tags.empty?
+      @account.featured_tags.where(tag_id: removed_tags.map(&:id)).each do |featured_tag|
+        featured_tag.decrement(@status.id)
+      end
     end
   end
 end
