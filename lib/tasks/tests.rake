@@ -159,8 +159,8 @@ namespace :tests do
         INSERT INTO "statuses"
           (id, account_id, text, in_reply_to_id, conversation_id, visibility, created_at, updated_at)
         VALUES
-          (10, 2, '@admin hey!', NULL, 1, 3, now(), now()),
-          (11, 1, '@user hey!', 10, 1, 3, now(), now());
+          (10, 2, '@admin hey!', NULL, 1, 4, now(), now()),
+          (11, 1, '@user hey!', 10, 1, 4, now(), now());
 
         -- mentions (from previous statuses)
 

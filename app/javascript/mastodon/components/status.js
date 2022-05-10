@@ -80,6 +80,7 @@ const messages = defineMessages({
   public_short: { id: 'privacy.public.short', defaultMessage: 'Public' },
   unlisted_short: { id: 'privacy.unlisted.short', defaultMessage: 'Unlisted' },
   private_short: { id: 'privacy.private.short', defaultMessage: 'Followers-only' },
+  unleakable_short: { id: 'privacy.unleakable.short', defaultMessage: 'Followees only' },
   direct_short: { id: 'privacy.direct.short', defaultMessage: 'Mentioned people only' },
   edited: { id: 'status.edited', defaultMessage: 'Edited {date}' },
 });
@@ -588,6 +589,7 @@ class Status extends ImmutablePureComponent {
       'public': { icon: 'globe', text: intl.formatMessage(messages.public_short) },
       'unlisted': { icon: 'unlock', text: intl.formatMessage(messages.unlisted_short) },
       'private': { icon: 'lock', text: intl.formatMessage(messages.private_short) },
+      'unleakable': { icon: 'low-vision', text: intl.formatMessage(messages.unleakable_short) },
       'direct': { icon: 'envelope', text: intl.formatMessage(messages.direct_short) },
     };
 
