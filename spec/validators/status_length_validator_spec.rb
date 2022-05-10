@@ -66,7 +66,7 @@ describe StatusLengthValidator do
     end
 
     it 'does count both parts of remote usernames for overly long domains' do
-      text   = "@alice@#{'b' * 500}.com"
+      text   = "@alice@#{'b' * 5000}.com"
       status = double(spoiler_text: '', text: text, errors: double(add: nil), local?: true, reblog?: false)
 
       subject.validate(status)
