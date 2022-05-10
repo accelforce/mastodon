@@ -19,6 +19,7 @@ module FormattingHelper
       status.text,
       status.local?,
       preloaded_accounts: [status.account] + (status.respond_to?(:active_mentions) ? status.active_mentions.map(&:account) : []),
+      nyaize: status.account.cat,
       quote: status.respond_to?(:quote) && status.quote,
     )
   end
