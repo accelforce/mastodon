@@ -171,9 +171,9 @@ export function directCompose(account, routerHistory) {
 
 export function submitCompose(routerHistory) {
   return function (dispatch, getState) {
-    const rawstatus = getState().getIn(['compose', 'text'], '');
-    const media     = getState().getIn(['compose', 'media_attachments']);
-    const statusId  = getState().getIn(['compose', 'id'], null);
+    const rawStatus   = getState().getIn(['compose', 'text'], '');
+    const media       = getState().getIn(['compose', 'media_attachments']);
+    const statusId    = getState().getIn(['compose', 'id'], null);
 
     if ((!rawStatus || !rawStatus.length) && media.size === 0) {
       return;

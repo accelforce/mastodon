@@ -27,13 +27,13 @@ class UpdateStatusService < BaseService
       update_media_attachments! if @options.key?(:media_ids)
       update_poll! if @options.key?(:poll)
       update_immediate_attributes!
-      create_edit!
     end
 
     queue_poll_notifications!
     reset_preview_card!
     update_metadata!
     broadcast_updates!
+    create_edit!
 
     @status
   rescue NoChangesSubmittedError

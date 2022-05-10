@@ -30,7 +30,7 @@ RSpec.describe UpdateStatusService, type: :service do
     end
 
     it 'updates text' do
-      expect(status.reload.text).to eq 'Bar'
+      expect(status.reload.text).to eq 'Bar #nitiasa'
     end
 
     it 'resets preview card' do
@@ -38,7 +38,7 @@ RSpec.describe UpdateStatusService, type: :service do
     end
 
     it 'saves edit history' do
-      expect(status.edits.pluck(:text)).to eq %w(Foo Bar)
+      expect(status.edits.pluck(:text)).to eq ['Foo', 'Bar #nitiasa']
     end
   end
 
@@ -56,7 +56,7 @@ RSpec.describe UpdateStatusService, type: :service do
     end
 
     it 'saves edit history' do
-      expect(status.edits.pluck(:text, :spoiler_text)).to eq [['Foo', ''], ['Foo', 'Bar']]
+      expect(status.edits.pluck(:text, :spoiler_text)).to eq [['Foo', ''], ['Foo #nitiasa', 'Bar']]
     end
   end
 
@@ -144,7 +144,7 @@ RSpec.describe UpdateStatusService, type: :service do
     end
 
     it 'changes tags' do
-      expect(status.tags.pluck(:name)).to eq %w(bar)
+      expect(status.tags.pluck(:name)).to eq %w(nitiasa bar)
     end
   end
 

@@ -116,7 +116,7 @@ RSpec.describe Api::V1::StatusesController, type: :controller do
       end
 
       it 'updates the status' do
-        expect(status.reload.text).to eq 'I am updated'
+        expect(status.reload.text).to eq 'I am updated #nitiasa'
       end
     end
   end
