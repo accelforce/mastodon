@@ -24,13 +24,13 @@ Production branch of [odakyudon](#odakyudon-instance).
 
 Includes these branches below.
 
-* [custom/auto-media-remove](#customauto-media-remove)
 * [custom/cat](#customcat)
 * [custom/everyone](#customeveryone)
 * [custom/odakyudon](#customodakyudon)
 * [custom/pgroonga](#custompgroonga)
 * [custom/quote](#customquote)
 * [custom/unleakable](#customunleakable)
+* <strike>[custom/auto-media-remove](#customauto-media-remove)</strike>
 * <strike>[custom/private-filter](#customprivate-filter)</strike>
 
 ### [nitiasadon](https://github.com/accelforce/mastodon/tree/nitiasadon)
@@ -47,6 +47,8 @@ Includes these branches below.
 * [custom/quote](#customquote)
 
 ### [custom/auto-media-remove](https://github.com/accelforce/mastodon/tree/custom/auto-media-remove)
+
+**EOS: This feature is implemented in [mastodon/mastodon#19232](https://github.com/mastodon/mastodon/pull/19232).**
 
 Feature branch of automated media removal feature.
 
