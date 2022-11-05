@@ -16,9 +16,6 @@ class Scheduler::MediaCleanupScheduler
       attachment.file.destroy
       attachment.thumbnail.destroy
       attachment.save
-
-    rescue => e
-      Rails.logger.warn "Error removing media cache #{attachment.id}: #{e}"
     end
   end
 
