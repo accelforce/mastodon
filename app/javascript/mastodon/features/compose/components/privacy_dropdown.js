@@ -18,7 +18,7 @@ const messages = defineMessages({
   private_long: { id: 'privacy.private.long', defaultMessage: 'Visible for followers only' },
   unleakable_short: { id: 'privacy.unleakable.short', defaultMessage: 'Followees only' },
   unleakable_long: { id: 'privacy.unleakable.long', defaultMessage: 'Visible for followed users only' },
-  direct_short: { id: 'privacy.direct.short', defaultMessage: 'Only people I mention' },
+  direct_short: { id: 'privacy.direct.short', defaultMessage: 'Mentioned people only' },
   direct_long: { id: 'privacy.direct.long', defaultMessage: 'Visible for mentioned users only' },
   change_privacy: { id: 'privacy.change', defaultMessage: 'Adjust status privacy' },
 });
