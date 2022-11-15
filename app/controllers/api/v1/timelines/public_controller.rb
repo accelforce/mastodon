@@ -47,7 +47,6 @@ class Api::V1::Timelines::PublicController < Api::BaseController
     else
       PublicFeed.new(
         current_account,
-        locale: content_locale,
         local: false,
         remote: truthy_param?(:remote),
         only_media: truthy_param?(:only_media)
