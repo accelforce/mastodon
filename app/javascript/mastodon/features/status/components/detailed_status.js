@@ -40,6 +40,7 @@ class DetailedStatus extends ImmutablePureComponent {
     onOpenVideo: PropTypes.func.isRequired,
     onToggleHidden: PropTypes.func.isRequired,
     onQuoteToggleHidden: PropTypes.func.isRequired,
+    onTranslate: PropTypes.func.isRequired,
     measureHeight: PropTypes.bool,
     onHeightChange: PropTypes.func,
     domain: PropTypes.string.isRequired,
@@ -123,6 +124,11 @@ class DetailedStatus extends ImmutablePureComponent {
     window.open(href, 'mastodon-intent', 'width=445,height=600,resizable=no,menubar=no,status=no,scrollbars=yes');
   }
 
+  handleTranslate = () => {
+    const { onTranslate, status } = this.props;
+    onTranslate(status);
+  }
+
   render () {
     const status = (this.props.status && this.props.status.get('reblog')) ? this.props.status.get('reblog') : this.props.status;
     const outerStyle = { boxSizing: 'border-box' };
@@ -143,8 +149,8 @@ class DetailedStatus extends ImmutablePureComponent {
     }
 
     const identity = (status, _0, _1, quote = false) => (
-      <a href={status.getIn(['account', 'url'])} onClick={this.handleAccountClick} data-acct={status.getIn(['account', 'acct'])} className='detailed-status__display-name'>
-        <div className='detailed-status__display-avatar'><Avatar account={status.get('account')} size={quote ? 18 : 48} /></div>
+      <a href={`/@${status.getIn(['account', 'acct'])}`} onClick={this.handleAccountClick} data-acct={status.getIn(['account', 'acct'])} className='detailed-status__display-name'>
+        <div className='detailed-status__display-avatar'><Avatar account={status.get('account')} size={quote ? 18 : 46} /></div>
         <DisplayName account={status.get('account')} localDomain={this.props.domain} />
       </a>
     );
@@ -165,7 +171,11 @@ class DetailedStatus extends ImmutablePureComponent {
               backgroundColor={attachment.getIn(['meta', 'colors', 'background'])}
               foregroundColor={attachment.getIn(['meta', 'colors', 'foreground'])}
               accentColor={attachment.getIn(['meta', 'colors', 'accent'])}
+              sensitive={status.get('sensitive')}
+              visible={this.props.showMedia}
+              blurhash={attachment.get('blurhash')}
               height={150}
+              onToggleVisibility={this.props.onToggleMediaVisibility}
               quote={quote}
             />
           );
@@ -225,7 +235,7 @@ class DetailedStatus extends ImmutablePureComponent {
       'public': { icon: 'globe', text: intl.formatMessage(messages.public_short) },
       'unlisted': { icon: 'unlock', text: intl.formatMessage(messages.unlisted_short) },
       'private': { icon: 'lock', text: intl.formatMessage(messages.private_short) },
-      'direct': { icon: 'envelope', text: intl.formatMessage(messages.direct_short) },
+      'direct': { icon: 'at', text: intl.formatMessage(messages.direct_short) },
     };
 
     const visibilityIcon = visibilityIconInfo[status.get('visibility')];
@@ -293,14 +303,19 @@ class DetailedStatus extends ImmutablePureComponent {
         <div ref={this.setRef} className={classNames('detailed-status', `detailed-status-${status.get('visibility')}`, { compact })}>
           {identity(status, null, null, false)}
 
-          <StatusContent status={status} expanded={!status.get('hidden')} onExpandedToggle={this.handleExpandedToggle} />
+          <StatusContent
+            status={status}
+            expanded={!status.get('hidden')}
+            onExpandedToggle={this.handleExpandedToggle}
+            onTranslate={this.handleTranslate}
+          />
 
           {media(status, false)}
 
           {quote(status, false, quoteMuted, this.handleQuoteClick, this.handleExpandedQuoteToggle, identity, media, this.context.router)}
 
           <div className='detailed-status__meta'>
-            <a className='detailed-status__datetime' href={status.get('url')} target='_blank' rel='noopener noreferrer'>
+            <a className='detailed-status__datetime' href={`/@${status.getIn(['account', 'acct'])}\/${status.get('id')}`} target='_blank' rel='noopener noreferrer'>
               <FormattedDate value={new Date(status.get('created_at'))} hour12={false} year='numeric' month='short' day='2-digit' hour='2-digit' minute='2-digit' />
             </a>{edited}{visibilityLink}{applicationLink}{reblogLink} · {favouriteLink}
           </div>
