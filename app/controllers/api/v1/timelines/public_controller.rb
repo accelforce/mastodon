@@ -5,6 +5,7 @@ class Api::V1::Timelines::PublicController < Api::BaseController
   after_action :insert_pagination_headers, unless: -> { @statuses.empty? }
 
   def show
+    cache_if_unauthenticated!
     @statuses = load_statuses
     render json: @statuses, each_serializer: REST::StatusSerializer, relationships: StatusRelationshipsPresenter.new(@statuses, current_user&.account_id)
   end
@@ -35,7 +36,7 @@ class Api::V1::Timelines::PublicController < Api::BaseController
   def public_feed
     if truthy_param?(:local)
       TagFeed.new(
-        Tag::find_by_name(ProcessHashtagsService::DEFAULT_HASHTAG),
+        Tag.find_by(name: ProcessHashtagsService::DEFAULT_HASHTAG),
         current_account,
         any: [],
         all: [],
