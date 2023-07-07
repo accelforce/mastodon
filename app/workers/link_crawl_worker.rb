@@ -7,9 +7,7 @@ class LinkCrawlWorker
 
   def perform(status_id)
     FetchLinkCardService.new.call(Status.find(status_id))
-  rescue OpenSSL::SSL::SSLError
-    true
-  rescue ActiveRecord::RecordNotFound
+  rescue OpenSSL::SSL::SSLError, ActiveRecord::RecordNotFound
     true
   end
 end

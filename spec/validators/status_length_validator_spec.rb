@@ -5,38 +5,38 @@ require 'rails_helper'
 describe StatusLengthValidator do
   describe '#validate' do
     it 'does not add errors onto remote statuses' do
-      status = double(local?: false)
+      status = instance_double(Status, local?: false)
       subject.validate(status)
-      expect(status).not_to receive(:errors)
+      expect(status).to_not receive(:errors)
     end
 
     it 'does not add errors onto local reblogs' do
-      status = double(local?: false, reblog?: true)
+      status = instance_double(Status, local?: false, reblog?: true)
       subject.validate(status)
-      expect(status).not_to receive(:errors)
+      expect(status).to_not receive(:errors)
     end
 
     it 'adds an error when content warning is over 4096 characters' do
-      status = double(spoiler_text: 'a' * 5000, text: '', errors: double(add: nil), local?: true, reblog?: false)
+      status = instance_double(Status, spoiler_text: 'a' * 5000, text: '', errors: activemodel_errors, local?: true, reblog?: false)
       subject.validate(status)
       expect(status.errors).to have_received(:add)
     end
 
     it 'adds an error when text is over 4096 characters' do
-      status = double(spoiler_text: '', text: 'a' * 5000, errors: double(add: nil), local?: true, reblog?: false)
+      status = instance_double(Status, spoiler_text: '', text: 'a' * 5000, errors: activemodel_errors, local?: true, reblog?: false)
       subject.validate(status)
       expect(status.errors).to have_received(:add)
     end
 
     it 'adds an error when text and content warning are over 4096 characters total' do
-      status = double(spoiler_text: 'a' * 2500, text: 'b' * 2500, errors: double(add: nil), local?: true, reblog?: false)
+      status = instance_double(Status, spoiler_text: 'a' * 2500, text: 'b' * 2500, errors: activemodel_errors, local?: true, reblog?: false)
       subject.validate(status)
       expect(status.errors).to have_received(:add)
     end
 
     it 'counts URLs as 23 characters flat' do
       text   = ('a' * 4072) + " http://#{'b' * 30}.com/example"
-      status = double(spoiler_text: '', text: text, errors: double(add: nil), local?: true, reblog?: false)
+      status = instance_double(Status, spoiler_text: '', text: text, errors: activemodel_errors, local?: true, reblog?: false)
 
       subject.validate(status)
       expect(status.errors).to_not have_received(:add)
@@ -44,7 +44,7 @@ describe StatusLengthValidator do
 
     it 'does not count non-autolinkable URLs as 23 characters flat' do
       text   = ('a' * 4072) + "http://#{'b' * 30}.com/example"
-      status = double(spoiler_text: '', text: text, errors: double(add: nil), local?: true, reblog?: false)
+      status = instance_double(Status, spoiler_text: '', text: text, errors: activemodel_errors, local?: true, reblog?: false)
 
       subject.validate(status)
       expect(status.errors).to have_received(:add)
@@ -52,14 +52,14 @@ describe StatusLengthValidator do
 
     it 'does not count overly long URLs as 23 characters flat' do
       text = "http://example.com/valid?#{'#foo?' * 1000}"
-      status = double(spoiler_text: '', text: text, errors: double(add: nil), local?: true, reblog?: false)
+      status = instance_double(Status, spoiler_text: '', text: text, errors: activemodel_errors, local?: true, reblog?: false)
       subject.validate(status)
       expect(status.errors).to have_received(:add)
     end
 
     it 'counts only the front part of remote usernames' do
       text   = ('a' * 4072) + " @alice@#{'b' * 30}.com"
-      status = double(spoiler_text: '', text: text, errors: double(add: nil), local?: true, reblog?: false)
+      status = instance_double(Status, spoiler_text: '', text: text, errors: activemodel_errors, local?: true, reblog?: false)
 
       subject.validate(status)
       expect(status.errors).to_not have_received(:add)
@@ -67,10 +67,16 @@ describe StatusLengthValidator do
 
     it 'does count both parts of remote usernames for overly long domains' do
       text   = "@alice@#{'b' * 5000}.com"
-      status = double(spoiler_text: '', text: text, errors: double(add: nil), local?: true, reblog?: false)
+      status = instance_double(Status, spoiler_text: '', text: text, errors: activemodel_errors, local?: true, reblog?: false)
 
       subject.validate(status)
       expect(status.errors).to have_received(:add)
     end
+  end
+
+  private
+
+  def activemodel_errors
+    instance_double(ActiveModel::Errors, add: nil)
   end
 end
