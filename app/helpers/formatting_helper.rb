@@ -14,7 +14,7 @@ module FormattingHelper
   end
   module_function :extract_status_plain_text
 
-  def status_content_format(status)
+  def status_content_format(status, outgoing: false)
     html_aware_format(
       status.text,
       status.local?,

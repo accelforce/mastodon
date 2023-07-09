@@ -53,29 +53,6 @@ export const mapStateToProps = (state, props) => {
   };
 };
 
-export const mapStateToProps = (state, props) => {
-  let status = props.status;
-
-  if (status === null) {
-    return null;
-  }
-
-  if (status.get('reblog', null) !== null && typeof status.get('reblog') === 'object') {
-    status = status.get('reblog');
-  }
-
-  if (status.get('quote', null) === null) {
-    return {
-      quoteMuted: !!status.get('quote_id', null),
-    };
-  }
-
-  const id = status.getIn(['quote', 'account', 'id'], null);
-  return {
-    quoteMuted: id !== null && (state.getIn(['relationships', id, 'muting']) || state.getIn(['relationships', id, 'blocking']) || state.getIn(['relationships', id, 'blocked_by']) || state.getIn(['relationships', id, 'domain_blocking']) || status.getIn(['quote', 'muted'])),
-  };
-};
-
 export const textForScreenReader = (intl, status, rebloggedByText = false) => {
   const displayName = status.getIn(['account', 'display_name']);
 
@@ -262,10 +239,6 @@ class Status extends ImmutablePureComponent {
     this.setState({ showQuoteMedia: !this.state.showQuoteMedia });
   }
 
-  handleToggleQuoteMediaVisibility = () => {
-    this.setState({ showQuoteMedia: !this.state.showQuoteMedia });
-  }
-
   handleClick = e => {
     if (e && (e.button !== 0 || e.ctrlKey || e.metaKey)) {
       return;
@@ -302,16 +275,7 @@ class Status extends ImmutablePureComponent {
 
     const { status } = this.props;
     this.context.router.history.push(`/statuses/${status.getIn(['reblog', 'quote', 'id'], status.getIn(['quote', 'id']))}`);
-  }
-
-  handleQuoteClick = () => {
-    if (!this.context.router) {
-      return;
-    }
-
-    const { status } = this.props;
-    this.context.router.history.push(`/statuses/${status.getIn(['reblog', 'quote', 'id'], status.getIn(['quote', 'id']))}`);
-  }
+  };
 
   handleExpandedToggle = () => {
     this.props.onToggleHidden(this._properStatus());
@@ -327,11 +291,7 @@ class Status extends ImmutablePureComponent {
 
   handleExpandedQuoteToggle = () => {
     this.props.onQuoteToggleHidden(this._properStatus());
-  }
-
-  handleExpandedQuoteToggle = () => {
-    this.props.onQuoteToggleHidden(this._properStatus());
-  }
+  };
 
   renderLoadingMediaGallery () {
     return <div className='media-gallery' style={{ height: '110px' }} />;

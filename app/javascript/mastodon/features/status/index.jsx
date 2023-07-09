@@ -253,11 +253,7 @@ class Status extends ImmutablePureComponent {
 
   handleToggleQuoteMediaVisibility = () => {
     this.setState({ showQuoteMedia: !this.state.showQuoteMedia });
-  }
-
-  handleToggleQuoteMediaVisibility = () => {
-    this.setState({ showQuoteMedia: !this.state.showQuoteMedia });
-  }
+  };
 
   handleFavouriteClick = (status) => {
     const { dispatch } = this.props;
@@ -329,20 +325,7 @@ class Status extends ImmutablePureComponent {
     } else {
       dispatch(quoteCompose(status, this.context.router.history));
     }
-  }
-
-  handleQuoteClick = (status) => {
-    let { askReplyConfirmation, dispatch, intl } = this.props;
-    if (askReplyConfirmation) {
-      dispatch(openModal('CONFIRM', {
-        message: intl.formatMessage(messages.quoteMessage),
-        confirm: intl.formatMessage(messages.quoteConfirm),
-        onConfirm: () => dispatch(quoteCompose(status, this.context.router.history)),
-      }));
-    } else {
-      dispatch(quoteCompose(status, this.context.router.history));
-    }
-  }
+  };
 
   handleModalReblog = (status, privacy) => {
     this.props.dispatch(reblog(status, privacy));
@@ -465,15 +448,7 @@ class Status extends ImmutablePureComponent {
     } else {
       this.props.dispatch(hideQuote(status.get('id')));
     }
-  }
-
-  handleQuoteToggleHidden = (status) => {
-    if (status.get('quote_hidden')) {
-      this.props.dispatch(revealQuote(status.get('id')));
-    } else {
-      this.props.dispatch(hideQuote(status.get('id')));
-    }
-  }
+  };
 
   handleToggleAll = () => {
     const { status, ancestorsIds, descendantsIds } = this.props;

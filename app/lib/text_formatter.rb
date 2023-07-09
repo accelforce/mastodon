@@ -137,13 +137,6 @@ class TextFormatter
     HTML
   end
 
-  def render_quote
-    link = link_to_url({ url: ap_tag_manager.url_for(quote) })
-    <<~HTML.squish
-      <span class="quote-inline"><br/>~~~~~~~~~~<br/>[#{link}]</span>
-    HTML
-  end
-
   def entity_cache
     @entity_cache ||= EntityCache.instance
   end
@@ -176,14 +169,6 @@ class TextFormatter
 
   def preloaded_accounts?
     preloaded_accounts.present?
-  end
-
-  def quote
-    options[:quote]
-  end
-
-  def quote?
-    quote.present?
   end
 
   def quote

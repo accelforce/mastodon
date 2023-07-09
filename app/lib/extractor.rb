@@ -116,4 +116,35 @@ module Extractor
 
     possible_entries
   end
+
+  def extract_nyaizable_phrases(text)
+    possible_entries = []
+
+    text.scan(/[なナﾅ]/) do
+      possible_entries << handle_nyaizable_match(:ja, $LAST_MATCH_INFO)
+    end
+
+    text.scan(/[나-낳]/) do
+      possible_entries << handle_nyaizable_match(:ko, $LAST_MATCH_INFO)
+    end
+
+    if block_given?
+      possible_entries.each do |nyaizable|
+        yield nyaizable[:nyaizable], nyaizable[:indices].first, nyaizable[:indices].last
+      end
+    end
+
+    possible_entries
+  end
+
+  def handle_nyaizable_match(lang, match_data)
+    start_position = match_data.char_begin(0)
+    end_position   = match_data.char_end(0)
+
+    {
+      nyaizable: match_data[0],
+      lang: lang,
+      indices: [start_position, end_position],
+    }
+  end
 end

@@ -4,7 +4,6 @@ import { createSelector } from 'reselect';
 import { toServerSideType } from 'mastodon/utils/filters';
 
 import { me } from '../initial_state';
-import {reblogRequest} from '../actions/interactions';
 
 const getAccountBase         = (state, id) => state.getIn(['accounts', id], null);
 const getAccountCounters     = (state, id) => state.getIn(['accounts_counters', id], null);

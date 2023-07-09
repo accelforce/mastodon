@@ -145,11 +145,7 @@ class StatusActionBar extends ImmutablePureComponent {
 
   handleQuoteClick = () => {
     this.props.onQuote(this.props.status, this.context.router.history);
-  }
-
-  handleQuoteClick = () => {
-    this.props.onQuote(this.props.status, this.context.router.history);
-  }
+  };
 
   handleBookmarkClick = () => {
     this.props.onBookmark(this.props.status);
@@ -250,15 +246,7 @@ class StatusActionBar extends ImmutablePureComponent {
     } else {
       return intl.formatMessage(messages.cannot_quote);
     }
-  }
-
-  static quoteTitle = (intl, messages, publicStatus) => {
-    if (publicStatus) {
-      return intl.formatMessage(messages.quote);
-    } else {
-      return intl.formatMessage(messages.cannot_quote);
-    }
-  }
+  };
 
   render () {
     const { status, relationship, intl, withDismiss, withCounters, scrollKey } = this.props;

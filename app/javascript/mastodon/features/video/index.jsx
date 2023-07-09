@@ -510,11 +510,6 @@ class Video extends PureComponent {
       playerStyle.aspectRatio = quote ? '32 / 9' : '16 / 9';
     }
 
-    if (quote && height) {
-      height /= 2;
-      playerStyle.height = height;
-    }
-
     let preload;
 
     if (this.props.currentTime || fullscreen || dragging) {

@@ -6,6 +6,7 @@ import classNames from 'classnames';
 
 import ImmutablePropTypes from 'react-immutable-proptypes';
 import ImmutablePureComponent from 'react-immutable-pure-component';
+
 import AttachmentList from 'mastodon/components/attachment_list';
 
 import { Avatar } from '../../../components/avatar';

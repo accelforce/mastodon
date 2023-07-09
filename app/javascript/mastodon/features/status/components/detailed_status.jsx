@@ -85,7 +85,7 @@ class DetailedStatus extends ImmutablePureComponent {
 
   handleExpandedQuoteToggle = () => {
     this.props.onQuoteToggleHidden(this.props.status);
-  }
+  };
 
   handleQuoteClick = () => {
     if (!this.context.router) {
@@ -94,20 +94,7 @@ class DetailedStatus extends ImmutablePureComponent {
 
     const { status } = this.props;
     this.context.router.history.push(`/statuses/${status.getIn(['quote', 'id'])}`);
-  }
-
-  handleExpandedQuoteToggle = () => {
-    this.props.onQuoteToggleHidden(this.props.status);
-  }
-
-  handleQuoteClick = () => {
-    if (!this.context.router) {
-      return;
-    }
-
-    const { status } = this.props;
-    this.context.router.history.push(`/statuses/${status.getIn(['quote', 'id'])}`);
-  }
+  };
 
   _measureHeight (heightJustChanged) {
     if (this.props.measureHeight && this.node) {
