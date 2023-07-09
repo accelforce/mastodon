@@ -138,7 +138,7 @@ class ActivityPub::ActorSerializer < ActivityPub::Serializer
     object.suspended? ? false : object.locked
   end
 
-  def is_cat
+  def is_cat # rubocop:disable Naming/PredicateName
     object.cat
   end
 
