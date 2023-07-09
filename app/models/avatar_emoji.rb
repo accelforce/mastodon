@@ -26,8 +26,8 @@ class AvatarEmoji
     false
   end
 
-  def association(name)
-    FakeAssociation.new()
+  def association(_)
+    FakeAssociation.new
   end
 
   def attributes
@@ -38,7 +38,7 @@ class AvatarEmoji
     "#<AvatarEmoji shortcode: #{shortcode}, account_id: #{account.id}>"
   end
 
-  SHORTCODE_RE_FRAGMENT = /@(([a-z0-9_]+)(?:@[a-z0-9\.\-]+[a-z0-9]+)?)/i
+  SHORTCODE_RE_FRAGMENT = /@(([a-z0-9_]+)(?:@[a-z0-9.-]+[a-z0-9]+)?)/i
 
   SCAN_RE = /:#{SHORTCODE_RE_FRAGMENT}:/x
 
@@ -50,11 +50,10 @@ class AvatarEmoji
 
       return [] if shortcodes.empty?
 
-      emojis = shortcodes.reduce([]) do |emojis, shortcode|
+      emojis = shortcodes.filter_map do |shortcode|
         username, host = shortcode.split('@')
         account = Account.find_remote(username, host || domain)
-        emojis << new(account, "@#{shortcode}") if !account.nil?
-        emojis
+        new(account, "@#{shortcode}") unless account.nil?
       end
 
       emojis.compact

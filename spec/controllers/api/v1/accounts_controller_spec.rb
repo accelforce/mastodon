@@ -30,7 +30,7 @@ RSpec.describe Api::V1::AccountsController do
       end
     end
 
-    context 'given no agreement' do
+    context 'when given no agreement' do
       it 'returns http forbidden' do
         expect(response).to have_http_status(403)
       end
