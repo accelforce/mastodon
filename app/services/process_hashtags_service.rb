@@ -20,7 +20,7 @@ class ProcessHashtagsService < BaseService
   def local_tags
     tags = Extractor.extract_hashtags(@status.text)
 
-    if !tags.include?(DEFAULT_HASHTAG) && !tags.include?(IGNORE_DEFAULT_HASHTAG) && @status.public_visibility? && !@status.reply?
+    if tags.exclude?(DEFAULT_HASHTAG) && tags.exclude?(IGNORE_DEFAULT_HASHTAG) && @status.public_visibility? && !@status.reply?
       tags << DEFAULT_HASHTAG
       @status.update(text: "#{@status.text} ##{DEFAULT_HASHTAG}")
     end

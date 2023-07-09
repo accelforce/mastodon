@@ -40,7 +40,7 @@ class Api::V1::Timelines::PublicController < Api::BaseController
   def public_feed
     if truthy_param?(:local)
       TagFeed.new(
-        Tag::find_by_name(ProcessHashtagsService::DEFAULT_HASHTAG),
+        Tag.find_by(name: ProcessHashtagsService::DEFAULT_HASHTAG),
         current_account,
         any: [],
         all: [],
