@@ -5,7 +5,7 @@ class TextFormatter
   include ERB::Util
   include RoutingHelper
 
-  URL_PREFIX_REGEX = /\A(https?:\/\/(www\.)?|xmpp:)/.freeze
+  URL_PREFIX_REGEX = %r{\A(https?://(www\.)?|xmpp:)}
 
   DEFAULT_REL = %w(nofollow noopener noreferrer).freeze
 
@@ -42,12 +42,6 @@ class TextFormatter
         link_to_hashtag(entity)
       elsif entity[:screen_name]
         link_to_mention(entity)
-      elsif entity[:nyaizable]
-        if nyaize?
-          nyaize(entity)
-        else
-          entity[:nyaizable]
-        end
       end
     end
 
@@ -89,7 +83,7 @@ class TextFormatter
     cutoff      = url[prefix.length..-1].length > 30
 
     <<~HTML.squish
-      <a href="#{h(url)}" target="_blank" rel="#{rel.join(' ')}"><span class="invisible">#{h(prefix)}</span><span class="#{cutoff ? 'ellipsis' : ''}">#{h(display_url)}</span><span class="invisible">#{h(suffix)}</span></a>
+      <a href="#{h(url)}" target="_blank" rel="#{rel.join(' ')}" translate="no"><span class="invisible">#{h(prefix)}</span><span class="#{cutoff ? 'ellipsis' : ''}">#{h(display_url)}</span><span class="invisible">#{h(suffix)}</span></a>
     HTML
   rescue Addressable::URI::InvalidURIError, IDN::Idna::IdnaError
     h(entity[:url])
@@ -132,31 +126,15 @@ class TextFormatter
     display_username = same_username_hits&.positive? || with_domains? ? account.pretty_acct : account.username
 
     <<~HTML.squish
-      <span class="h-card"><a href="#{h(url)}" class="u-url mention">@<span>#{h(display_username)}</span></a></span>
+      <span class="h-card" translate="no"><a href="#{h(url)}" class="u-url mention">@<span>#{h(display_username)}</span></a></span>
     HTML
   end
 
-  def nyaize(entity)
-    nyaizable = entity[:nyaizable]
-    lang      = entity[:lang]
-
-    case lang
-    when :ja
-      case nyaizable
-      when 'な'
-        'にゃ'
-      when 'ナ'
-        'ニャ'
-      when 'ﾅ'
-        'ﾆｬ'
-      else
-        nyaizable
-      end
-    when :ko
-      (nyaizable.ord + '냐'.ord - '나'.ord).chr
-    else
-      nyaizable
-    end
+  def render_quote
+    link = link_to_url({ url: ap_tag_manager.url_for(quote) })
+    <<~HTML.squish
+      <span class="quote-inline"><br/>~~~~~~~~~~<br/>[#{link}]</span>
+    HTML
   end
 
   def render_quote
@@ -200,8 +178,12 @@ class TextFormatter
     preloaded_accounts.present?
   end
 
-  def nyaize?
-    options[:nyaize]
+  def quote
+    options[:quote]
+  end
+
+  def quote?
+    quote.present?
   end
 
   def quote

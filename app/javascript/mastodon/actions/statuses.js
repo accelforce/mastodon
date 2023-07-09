@@ -1,8 +1,8 @@
 import api from '../api';
 
-import { deleteFromTimelines } from './timelines';
-import { importFetchedStatus, importFetchedStatuses, importFetchedAccount } from './importer';
 import { ensureComposeIsVisible, setComposeToStatus } from './compose';
+import { importFetchedStatus, importFetchedStatuses, importFetchedAccount } from './importer';
+import { deleteFromTimelines } from './timelines';
 
 export const STATUS_FETCH_REQUEST = 'STATUS_FETCH_REQUEST';
 export const STATUS_FETCH_SUCCESS = 'STATUS_FETCH_SUCCESS';
@@ -48,7 +48,7 @@ export function fetchStatusRequest(id, skipLoading) {
     id,
     skipLoading,
   };
-};
+}
 
 export function fetchStatus(id, forceFetch = false) {
   return (dispatch, getState) => {
@@ -69,14 +69,14 @@ export function fetchStatus(id, forceFetch = false) {
       dispatch(fetchStatusFail(id, error, skipLoading));
     });
   };
-};
+}
 
 export function fetchStatusSuccess(skipLoading) {
   return {
     type: STATUS_FETCH_SUCCESS,
     skipLoading,
   };
-};
+}
 
 export function fetchStatusFail(id, error, skipLoading) {
   return {
@@ -86,7 +86,7 @@ export function fetchStatusFail(id, error, skipLoading) {
     skipLoading,
     skipAlert: true,
   };
-};
+}
 
 export function redraft(status, raw_text) {
   return {
@@ -94,7 +94,7 @@ export function redraft(status, raw_text) {
     status,
     raw_text,
   };
-};
+}
 
 export const editStatus = (id, routerHistory) => (dispatch, getState) => {
   let status = getState().getIn(['statuses', id]);
@@ -150,21 +150,21 @@ export function deleteStatus(id, routerHistory, withRedraft = false) {
       dispatch(deleteStatusFail(id, error));
     });
   };
-};
+}
 
 export function deleteStatusRequest(id) {
   return {
     type: STATUS_DELETE_REQUEST,
     id: id,
   };
-};
+}
 
 export function deleteStatusSuccess(id) {
   return {
     type: STATUS_DELETE_SUCCESS,
     id: id,
   };
-};
+}
 
 export function deleteStatusFail(id, error) {
   return {
@@ -172,7 +172,7 @@ export function deleteStatusFail(id, error) {
     id: id,
     error: error,
   };
-};
+}
 
 export const updateStatus = status => dispatch =>
   dispatch(importFetchedStatus(status));
@@ -193,14 +193,14 @@ export function fetchContext(id) {
       dispatch(fetchContextFail(id, error));
     });
   };
-};
+}
 
 export function fetchContextRequest(id) {
   return {
     type: CONTEXT_FETCH_REQUEST,
     id,
   };
-};
+}
 
 export function fetchContextSuccess(id, ancestors, descendants) {
   return {
@@ -210,7 +210,7 @@ export function fetchContextSuccess(id, ancestors, descendants) {
     descendants,
     statuses: ancestors.concat(descendants),
   };
-};
+}
 
 export function fetchContextFail(id, error) {
   return {
@@ -219,7 +219,7 @@ export function fetchContextFail(id, error) {
     error,
     skipAlert: true,
   };
-};
+}
 
 export function muteStatus(id) {
   return (dispatch, getState) => {
@@ -231,21 +231,21 @@ export function muteStatus(id) {
       dispatch(muteStatusFail(id, error));
     });
   };
-};
+}
 
 export function muteStatusRequest(id) {
   return {
     type: STATUS_MUTE_REQUEST,
     id,
   };
-};
+}
 
 export function muteStatusSuccess(id) {
   return {
     type: STATUS_MUTE_SUCCESS,
     id,
   };
-};
+}
 
 export function muteStatusFail(id, error) {
   return {
@@ -253,7 +253,7 @@ export function muteStatusFail(id, error) {
     id,
     error,
   };
-};
+}
 
 export function unmuteStatus(id) {
   return (dispatch, getState) => {
@@ -265,21 +265,21 @@ export function unmuteStatus(id) {
       dispatch(unmuteStatusFail(id, error));
     });
   };
-};
+}
 
 export function unmuteStatusRequest(id) {
   return {
     type: STATUS_UNMUTE_REQUEST,
     id,
   };
-};
+}
 
 export function unmuteStatusSuccess(id) {
   return {
     type: STATUS_UNMUTE_SUCCESS,
     id,
   };
-};
+}
 
 export function unmuteStatusFail(id, error) {
   return {
@@ -287,7 +287,7 @@ export function unmuteStatusFail(id, error) {
     id,
     error,
   };
-};
+}
 
 export function hideStatus(ids) {
   if (!Array.isArray(ids)) {
@@ -298,7 +298,7 @@ export function hideStatus(ids) {
     type: STATUS_HIDE,
     ids,
   };
-};
+}
 
 export function revealStatus(ids) {
   if (!Array.isArray(ids)) {
@@ -309,7 +309,7 @@ export function revealStatus(ids) {
     type: STATUS_REVEAL,
     ids,
   };
-};
+}
 
 export function toggleStatusCollapse(id, isCollapsed) {
   return {
@@ -317,7 +317,7 @@ export function toggleStatusCollapse(id, isCollapsed) {
     id,
     isCollapsed,
   };
-};
+}
 
 export const translateStatus = id => (dispatch, getState) => {
   dispatch(translateStatusRequest(id));
@@ -346,9 +346,10 @@ export const translateStatusFail = (id, error) => ({
   error,
 });
 
-export const undoStatusTranslation = id => ({
+export const undoStatusTranslation = (id, pollId) => ({
   type: STATUS_TRANSLATE_UNDO,
   id,
+  pollId,
 });
 
 export function hideQuote(ids) {
