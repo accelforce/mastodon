@@ -1,18 +1,8 @@
 name: Build container image
 on:
-  workflow_dispatch:
   push:
     branches:
-      - 'main'
-    tags:
-      - '*'
-  pull_request:
-    paths:
-      - .github/workflows/build-image.yml
-      - Dockerfile
-permissions:
-  contents: read
-  packages: write
+      - 'nitiasadon'
 
 jobs:
   build-image:
@@ -33,44 +23,26 @@ jobs:
         with:
           username: ${{ secrets.DOCKERHUB_USERNAME }}
           password: ${{ secrets.DOCKERHUB_TOKEN }}
-        if: github.repository == 'mastodon/mastodon' && github.event_name != 'pull_request'
-
-      - name: Log in to the Github Container registry
-        uses: docker/login-action@v2
-        with:
-          registry: ghcr.io
-          username: ${{ github.actor }}
-          password: ${{ secrets.GITHUB_TOKEN }}
-        if: github.repository == 'mastodon/mastodon' && github.event_name != 'pull_request'
+        if: github.repository == 'accelforce/mastodon'
 
       - uses: docker/metadata-action@v4
         id: meta
         with:
           images: |
-            tootsuite/mastodon
-            ghcr.io/mastodon/mastodon
+            accelforce/nitiasadon
           flavor: |
             latest=auto
           tags: |
-            type=edge,branch=main
-            type=pep440,pattern={{raw}}
-            type=pep440,pattern=v{{major}}.{{minor}}
-            type=ref,event=pr
-
-      - name: Generate version suffix
-        id: version_vars
-        if: github.repository == 'mastodon/mastodon' && github.event_name == 'push' && github.ref_name == 'main'
-        run: |
-          echo mastodon_version_suffix=+edge-$(git rev-parse --short HEAD) >> $GITHUB_OUTPUT
+            type=raw,value=latest
+            type=sha,prefix=
 
       - uses: docker/build-push-action@v4
         with:
           context: .
-          build-args: MASTODON_VERSION_SUFFIX=${{ steps.version_vars.outputs.mastodon_version_suffix }}
           platforms: linux/amd64,linux/arm64
           provenance: false
           builder: ${{ steps.buildx.outputs.name }}
-          push: ${{ github.repository == 'mastodon/mastodon' && github.event_name != 'pull_request' }}
+          push: true
           tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}
           cache-from: type=gha
