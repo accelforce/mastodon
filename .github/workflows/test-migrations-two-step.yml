@@ -29,12 +29,12 @@ jobs:
 
       matrix:
         postgres:
-          - 14-alpine
-          - 15-alpine
+          - latest-debian-14
+          - latest-debian-15
 
     services:
       postgres:
-        image: postgres:${{ matrix.postgres}}
+        image: groonga/pgroonga:${{ matrix.postgres}}
         env:
           POSTGRES_PASSWORD: postgres
           POSTGRES_USER: postgres

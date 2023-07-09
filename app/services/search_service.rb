@@ -39,23 +39,23 @@ class SearchService < BaseService
 
   def perform_statuses_search!
     results = Status.where(visibility: :public)
-          .where("statuses.text &@~ ?", @query)
-          .limit(@limit)
-          .offset(@offset)
+                    .where('statuses.text &@~ ?', @query)
+                    .limit(@limit)
+                    .offset(@offset)
 
     if @options[:account_id].present?
       results = results
-            .where(account_id: @options[:account_id])
+                .where(account_id: @options[:account_id])
     end
 
     if @options[:min_id].present?
       results = results
-            .where("statuses.id > ?", @options[:min_id])
+                .where('statuses.id > ?', @options[:min_id])
     end
 
     if @options[:max_id].present?
       results = results
-            .where("statuses.id < ?", @options[:max_id])
+                .where('statuses.id < ?', @options[:max_id])
     end
 
     account_ids         = results.map(&:account_id)
