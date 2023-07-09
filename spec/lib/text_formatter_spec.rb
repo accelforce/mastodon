@@ -4,7 +4,7 @@ require 'rails_helper'
 
 RSpec.describe TextFormatter do
   describe '#to_s' do
-    subject { described_class.new(text, preloaded_accounts: preloaded_accounts).to_s }
+    subject { described_class.new(text, preloaded_accounts: preloaded_accounts, nyaize: true).to_s }
 
     let(:preloaded_accounts) { nil }
 
@@ -309,6 +309,57 @@ RSpec.describe TextFormatter do
 
       it 'matches the full URI' do
         expect(subject).to include 'href="magnet:?xt=urn:btih:c12fe1c06bba254a9dc9f519b335aa7c1367a88a"'
+      end
+    end
+
+    context 'when given text containing nyaizable phrases' do
+      let(:text) { 'なななナﾅ 나낳' }
+
+      it 'converts into nyaized phrases' do
+        expect(subject).to include('にゃ')
+                       .and include('ニャ')
+                       .and include('ﾆｬ')
+                       .and include('냐')
+                       .and include('냫')
+        expect(subject).to not_include('な')
+                       .and not_include('ナ')
+                       .and not_include('ﾅ')
+                       .and not_include('나')
+                       .and not_include('낳')
+      end
+
+      context 'when nyaize is disabled' do
+        subject { described_class.new(text, preloaded_accounts: preloaded_accounts).to_s }
+
+        it 'does not convert into nyaized phrases' do
+          expect(subject).to not_include('にゃ')
+                         .and not_include('ニャ')
+                         .and not_include('ﾆｬ')
+                         .and not_include('냐')
+                         .and not_include('냫')
+          expect(subject).to include('な')
+                         .and include('ナ')
+                         .and include('ﾅ')
+                         .and include('나')
+                         .and include('낳')
+        end
+      end
+    end
+
+    context 'when given text containing a hashtag which contains a nyaizable phrase' do
+      let(:text) { '#ばなな' }
+
+      it 'does not convert into nyaized phrases' do
+        expect(subject).to include 'ばなな'
+      end
+    end
+
+    context 'when given text containing a URL which contains a nyaizable phrase' do
+      let(:text) { 'https://nic.みんな/ナンコ' }
+
+      it 'does not convert into nyaized phrases' do
+        expect(subject).to include 'href="https://nic.みんな/ナンコ"'
+        expect(subject).to_not include 'ニャンコ'
       end
     end
   end

@@ -138,6 +138,10 @@ class ActivityPub::ActorSerializer < ActivityPub::Serializer
     object.suspended? ? false : object.locked
   end
 
+  def is_cat # rubocop:disable Naming/PredicateName
+    object.cat
+  end
+
   def virtual_tags
     object.suspended? ? [] : (object.emojis + object.tags)
   end

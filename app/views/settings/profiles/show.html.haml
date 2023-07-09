@@ -72,5 +72,8 @@
   .fields-group
     = f.input :bot, as: :boolean, wrapper: :with_label, hint: t('simple_form.hints.defaults.bot')
 
+  .fields-group
+    = f.input :cat, as: :boolean, wrapper: :with_label, hint: t('simple_form.hints.defaults.cat')
+
   .actions
     = f.button :button, t('generic.save_changes'), type: :submit
