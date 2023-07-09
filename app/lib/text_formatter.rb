@@ -42,6 +42,12 @@ class TextFormatter
         link_to_hashtag(entity)
       elsif entity[:screen_name]
         link_to_mention(entity)
+      elsif entity[:nyaizable]
+        if nyaize?
+          nyaize(entity)
+        else
+          entity[:nyaizable]
+        end
       end
     end
 
@@ -177,5 +183,32 @@ class TextFormatter
 
   def quote?
     quote.present?
+  end
+
+  def nyaize(entity)
+    nyaizable = entity[:nyaizable]
+    lang      = entity[:lang]
+
+    case lang
+    when :ja
+      case nyaizable
+      when 'な'
+        'にゃ'
+      when 'ナ'
+        'ニャ'
+      when 'ﾅ'
+        'ﾆｬ'
+      else
+        nyaizable
+      end
+    when :ko
+      (nyaizable.ord + '냐'.ord - '나'.ord).chr
+    else
+      nyaizable
+    end
+  end
+
+  def nyaize?
+    options[:nyaize]
   end
 end
