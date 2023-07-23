@@ -5,7 +5,7 @@ require 'rails_helper'
 describe ActivityPub::NoteSerializer do
   subject { JSON.parse(@serialization.to_json) }
 
-  let!(:account) { Fabricate(:account) }
+  let!(:account) { Fabricate(:account, cat: true) }
   let!(:other) { Fabricate(:account) }
   let!(:parent) { Fabricate(:status, account: account, visibility: :public) }
   let!(:reply_by_account_first) { Fabricate(:status, account: account, thread: parent, visibility: :public) }
@@ -20,6 +20,10 @@ describe ActivityPub::NoteSerializer do
 
   it 'has a Note type' do
     expect(subject['type']).to eql('Note')
+  end
+
+  it 'has a content which does not be nyaized' do
+    expect(subject['content']).to_not include('にゃ')
   end
 
   it 'has a replies collection' do
