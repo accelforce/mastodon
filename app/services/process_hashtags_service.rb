@@ -38,7 +38,7 @@ class ProcessHashtagsService < BaseService
     added_tags = @current_tags - @previous_tags
 
     unless added_tags.empty?
-      @account.featured_tags.where(tag_id: added_tags.map(&:id)).each do |featured_tag|
+      @account.featured_tags.where(tag_id: added_tags.map(&:id)).find_each do |featured_tag|
         featured_tag.increment(@status.created_at)
       end
     end
@@ -46,7 +46,7 @@ class ProcessHashtagsService < BaseService
     removed_tags = @previous_tags - @current_tags
 
     unless removed_tags.empty?
-      @account.featured_tags.where(tag_id: removed_tags.map(&:id)).each do |featured_tag|
+      @account.featured_tags.where(tag_id: removed_tags.map(&:id)).find_each do |featured_tag|
         featured_tag.decrement(@status.id)
       end
     end
