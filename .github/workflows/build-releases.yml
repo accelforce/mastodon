@@ -23,3 +23,22 @@ jobs:
         type=raw,value=latest
         type=sha,prefix=
     secrets: inherit
+
+  build-image-streaming:
+    uses: ./.github/workflows/build-container-image.yml
+    with:
+      file_to_build: streaming/Dockerfile
+      platforms: linux/amd64,linux/arm64
+      use_native_arm64_builder: false
+      push_to_images: |
+        accelforce/odakyudon-streaming
+      # Do not use cache when building releases, so apt update is always ran and the release always contain the latest packages
+      cache: false
+      # Only tag with latest when ran against the latest stable branch
+      # This needs to be updated after each minor version release
+      flavor: |
+        latest=auto
+      tags: |
+        type=raw,value=latest
+        type=sha,prefix=
+    secrets: inherit
