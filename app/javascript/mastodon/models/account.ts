@@ -65,6 +65,7 @@ export const accountDefaultValues: AccountShape = {
   avatar: '',
   avatar_static: '',
   bot: false,
+  cat: false,
   created_at: '',
   discoverable: false,
   indexable: false,

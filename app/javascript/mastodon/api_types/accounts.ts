@@ -18,6 +18,7 @@ export interface ApiAccountJSON {
   avatar: string;
   avatar_static: string;
   bot: boolean;
+  cat: boolean;
   created_at: string;
   discoverable: boolean;
   indexable: boolean;
