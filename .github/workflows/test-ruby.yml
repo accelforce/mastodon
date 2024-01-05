@@ -156,7 +156,7 @@ jobs:
 
     services:
       postgres:
-        image: postgres:14-alpine
+        image: groonga/pgroonga:latest-debian-14
         env:
           POSTGRES_PASSWORD: postgres
           POSTGRES_USER: postgres
@@ -239,7 +239,7 @@ jobs:
 
     services:
       postgres:
-        image: postgres:14-alpine
+        image: groonga/pgroonga:latest-debian-14
         env:
           POSTGRES_PASSWORD: postgres
           POSTGRES_USER: postgres
