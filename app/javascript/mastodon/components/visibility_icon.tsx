@@ -4,10 +4,11 @@ import { ReactComponent as AlternateEmailIcon } from '@material-symbols/svg-600/
 import { ReactComponent as LockIcon } from '@material-symbols/svg-600/outlined/lock.svg';
 import { ReactComponent as LockOpenIcon } from '@material-symbols/svg-600/outlined/lock_open.svg';
 import { ReactComponent as PublicIcon } from '@material-symbols/svg-600/outlined/public.svg';
+import { ReactComponent as VisibilityOffIcon } from '@material-symbols/svg-600/outlined/visibility_off.svg';
 
 import { Icon } from './icon';
 
-type Visibility = 'public' | 'unlisted' | 'private' | 'direct';
+type Visibility = 'public' | 'unlisted' | 'private' | 'unleakable' | 'direct';
 
 const messages = defineMessages({
   public_short: { id: 'privacy.public.short', defaultMessage: 'Public' },
@@ -15,6 +16,10 @@ const messages = defineMessages({
   private_short: {
     id: 'privacy.private.short',
     defaultMessage: 'Followers only',
+  },
+  unleakable_short: {
+    id: 'privacy.unleakable.short',
+    defaultMessage: 'Followees only',
   },
   direct_short: {
     id: 'privacy.direct.short',
@@ -42,6 +47,11 @@ export const VisibilityIcon: React.FC<{ visibility: Visibility }> = ({
       icon: 'lock',
       iconComponent: LockIcon,
       text: intl.formatMessage(messages.private_short),
+    },
+    unleakable: {
+      icon: 'low-vision',
+      iconComponent: VisibilityOffIcon,
+      text: intl.formatMessage(messages.unleakable_short),
     },
     direct: {
       icon: 'at',

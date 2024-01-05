@@ -234,7 +234,7 @@ class PrivacyDropdown extends PureComponent {
       { icon: 'globe', iconComponent: PublicIcon, value: 'public', text: formatMessage(messages.public_short), meta: formatMessage(messages.public_long) },
       { icon: 'unlock', iconComponent: LockOpenIcon,  value: 'unlisted', text: formatMessage(messages.unlisted_short), meta: formatMessage(messages.unlisted_long) },
       { icon: 'lock', iconComponent: LockIcon, value: 'private', text: formatMessage(messages.private_short), meta: formatMessage(messages.private_long) },
-      { icon: 'visibility-off', iconComponent: VisibilityOffIcon, value: 'unleakable', text: formatMessage(messages.unleakable_short), meta: formatMessage(messages.unleakable_long) },
+      { icon: 'visibility_off', iconComponent: VisibilityOffIcon, value: 'unleakable', text: formatMessage(messages.unleakable_short), meta: formatMessage(messages.unleakable_long) },
     ];
 
     if (!this.props.noDirect) {
