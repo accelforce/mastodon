@@ -11,7 +11,7 @@ describe 'Content-Security-Policy' do
       "base-uri 'none'",
       "default-src 'none'",
       "frame-ancestors 'none'",
-      "font-src 'self' https://cb6e6126.ngrok.io",
+      "font-src 'self' https://cb6e6126.ngrok.io https://fonts.gstatic.com",
       "img-src 'self' data: blob: https://cb6e6126.ngrok.io",
       "style-src 'self' https://cb6e6126.ngrok.io 'nonce-ZbA+JmE7+bK8F5qvADZHuQ=='",
       "media-src 'self' data: https://cb6e6126.ngrok.io",

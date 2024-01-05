@@ -399,11 +399,9 @@ class StatusActionBar extends ImmutablePureComponent {
       <IconButton className='status__action-bar__button' title={intl.formatMessage(messages.hide)} icon='eye' iconComponent={VisibilityIcon} onClick={this.handleHideClick} />
     );
 
-    const isReply = status.get('in_reply_to_account_id') === status.getIn(['account', 'id']);
-
     return (
       <div className='status__action-bar'>
-        <IconButton className='status__action-bar__button' title={replyTitle} icon={isReply ? 'reply' : replyIcon} iconComponent={isReply ? ReplyIcon : replyIconComponent} onClick={this.handleReplyClick} counter={status.get('replies_count')} />
+        <IconButton className='status__action-bar__button' title={replyTitle} icon={replyIcon} iconComponent={replyIconComponent} onClick={this.handleReplyClick} counter={status.get('replies_count')} />
         <IconButton className={classNames('status__action-bar__button', { reblogPrivate })} disabled={!publicStatus && !reblogPrivate} active={status.get('reblogged')} title={reblogTitle} icon='retweet' iconComponent={reblogIconComponent} onClick={this.handleReblogClick} counter={withCounters ? status.get('reblogs_count') : undefined} />
         <IconButton className='status__action-bar__button star-icon' animate active={status.get('favourited')} pressed={status.get('favourited')} title={intl.formatMessage(messages.favourite)} icon='star' iconComponent={status.get('favourited') ? StarIcon : StarBorderIcon} onClick={this.handleFavouriteClick} counter={withCounters ? status.get('favourites_count') : undefined} />
         <IconButton className='status__action-bar__button' disabled={!publicStatus} title={StatusActionBar.quoteTitle(intl, messages, publicStatus)} icon='format-quote' iconComponent={FormatQuoteIcon} onClick={this.handleQuoteClick} />

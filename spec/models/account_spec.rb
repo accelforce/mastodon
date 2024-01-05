@@ -718,8 +718,8 @@ RSpec.describe Account do
       expect(subject.match('@alice: I want everybody to see this')[1]).to eq 'alice'
     end
 
-    xit 'does not matches colon-prepend username' do
-      expect(subject.match(':@alice I want everybody to see this')[1]).to be_nil
+    it 'does not matches colon-prepend username' do
+      expect(subject.match(':@alice I want everybody to see this')).to be_nil
     end
 
     it 'does not match colon-surrounded username' do
