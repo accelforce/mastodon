@@ -1,10 +1,10 @@
 import { defineMessages, useIntl } from 'react-intl';
 
-import { ReactComponent as AlternateEmailIcon } from '@material-symbols/svg-600/outlined/alternate_email.svg';
-import { ReactComponent as LockIcon } from '@material-symbols/svg-600/outlined/lock.svg';
-import { ReactComponent as LockOpenIcon } from '@material-symbols/svg-600/outlined/lock_open.svg';
-import { ReactComponent as PublicIcon } from '@material-symbols/svg-600/outlined/public.svg';
-import { ReactComponent as VisibilityOffIcon } from '@material-symbols/svg-600/outlined/visibility_off.svg';
+import AlternateEmailIcon from '@/material-icons/400-24px/alternate_email.svg?react';
+import LockIcon from '@/material-icons/400-24px/lock.svg?react';
+import PublicIcon from '@/material-icons/400-24px/public.svg?react';
+import QuietTimeIcon from '@/material-icons/400-24px/quiet_time.svg?react';
+import VisibilityOffIcon from '@/material-icons/400-24px/visibility_off.svg?react';
 
 import { Icon } from './icon';
 
@@ -12,10 +12,13 @@ type Visibility = 'public' | 'unlisted' | 'private' | 'unleakable' | 'direct';
 
 const messages = defineMessages({
   public_short: { id: 'privacy.public.short', defaultMessage: 'Public' },
-  unlisted_short: { id: 'privacy.unlisted.short', defaultMessage: 'Unlisted' },
+  unlisted_short: {
+    id: 'privacy.unlisted.short',
+    defaultMessage: 'Quiet public',
+  },
   private_short: {
     id: 'privacy.private.short',
-    defaultMessage: 'Followers only',
+    defaultMessage: 'Followers',
   },
   unleakable_short: {
     id: 'privacy.unleakable.short',
@@ -23,7 +26,7 @@ const messages = defineMessages({
   },
   direct_short: {
     id: 'privacy.direct.short',
-    defaultMessage: 'Mentioned people only',
+    defaultMessage: 'Specific people',
   },
 });
 
@@ -40,7 +43,7 @@ export const VisibilityIcon: React.FC<{ visibility: Visibility }> = ({
     },
     unlisted: {
       icon: 'unlock',
-      iconComponent: LockOpenIcon,
+      iconComponent: QuietTimeIcon,
       text: intl.formatMessage(messages.unlisted_short),
     },
     private: {
