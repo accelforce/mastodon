@@ -187,7 +187,7 @@ module Account::Interactions
   end
 
   def followed_by?(other_account)
-    passive_relationships.where(account: other_account).exists?
+    passive_relationships.exists?(account: other_account)
   end
 
   def following_anyone?

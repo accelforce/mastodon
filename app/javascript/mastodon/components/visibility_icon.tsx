@@ -22,7 +22,7 @@ const messages = defineMessages({
   },
   unleakable_short: {
     id: 'privacy.unleakable.short',
-    defaultMessage: 'Followees only',
+    defaultMessage: 'Followees',
   },
   direct_short: {
     id: 'privacy.direct.short',
