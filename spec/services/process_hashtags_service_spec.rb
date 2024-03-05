@@ -8,9 +8,9 @@ RSpec.describe ProcessHashtagsService do
 
     it 'applies the tags from the status text' do
       expect { subject.call(status) }
-        .to change(Tag, :count).by(2)
+        .to change(Tag, :count).by(3)
       expect(status.reload.tags.map(&:name))
-        .to contain_exactly('one', 'two')
+        .to contain_exactly('one', 'two', 'nitiasa')
     end
   end
 end
