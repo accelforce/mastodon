@@ -20,7 +20,7 @@ export function fetchFavouritedStatuses() {
 
     dispatch(fetchFavouritedStatusesRequest());
 
-    api(getState).get('/api/v1/favourites').then(response => {
+    api().get('/api/v1/favourites').then(response => {
       const next = getLinks(response).refs.find(link => link.rel === 'next');
       dispatch(importFetchedStatuses(response.data));
       dispatch(fetchRelationships(uniq(response.data.map(item => item.reblog ? item.reblog.account.id : item.account.id))));
@@ -65,7 +65,7 @@ export function expandFavouritedStatuses() {
 
     dispatch(expandFavouritedStatusesRequest());
 
-    api(getState).get(url).then(response => {
+    api().get(url).then(response => {
       const next = getLinks(response).refs.find(link => link.rel === 'next');
       dispatch(importFetchedStatuses(response.data));
       dispatch(fetchRelationships(uniq(response.data.map(item => item.reblog ? item.reblog.account.id : item.account.id))));
