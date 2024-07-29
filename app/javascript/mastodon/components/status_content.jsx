@@ -16,7 +16,7 @@ import { identityContextPropShape, withIdentity } from 'mastodon/identity_contex
 import { autoPlayGif, languages as preloadedLanguages } from 'mastodon/initial_state';
 
 
-const MAX_HEIGHT = 706; // 22px * 32 (+ 2px padding at the top)
+const MAX_HEIGHT = 354; // 22px * 16 (+ 2px padding at the top)
 const QUOTE_MAX_HEIGHT = 112; // 22px * 5 (+ 2px padding at the top)
 
 /**
