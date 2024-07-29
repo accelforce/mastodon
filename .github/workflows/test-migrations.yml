@@ -27,8 +27,8 @@ jobs:
 
       matrix:
         postgres:
-          - latest-debian-14
-          - latest-debian-15
+          - latest-alpine-14
+          - latest-alpine-15
 
     services:
       postgres:
