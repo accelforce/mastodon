@@ -11,6 +11,7 @@ export type StatusVisibility =
   | 'unlisted'
   | 'private'
   // | 'limited' // This is never exposed to the API (they become `private`)
+  | 'unleakable'
   | 'direct';
 
 export interface ApiStatusApplicationJSON {
