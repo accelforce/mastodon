@@ -5,10 +5,9 @@ import LockIcon from '@/material-icons/400-24px/lock.svg?react';
 import PublicIcon from '@/material-icons/400-24px/public.svg?react';
 import QuietTimeIcon from '@/material-icons/400-24px/quiet_time.svg?react';
 import VisibilityOffIcon from '@/material-icons/400-24px/visibility_off.svg?react';
+import type { StatusVisibility } from 'mastodon/models/status';
 
 import { Icon } from './icon';
-
-type Visibility = 'public' | 'unlisted' | 'private' | 'unleakable' | 'direct';
 
 const messages = defineMessages({
   public_short: { id: 'privacy.public.short', defaultMessage: 'Public' },
@@ -30,7 +29,7 @@ const messages = defineMessages({
   },
 });
 
-export const VisibilityIcon: React.FC<{ visibility: Visibility }> = ({
+export const VisibilityIcon: React.FC<{ visibility: StatusVisibility }> = ({
   visibility,
 }) => {
   const intl = useIntl();
