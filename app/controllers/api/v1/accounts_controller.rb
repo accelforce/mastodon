@@ -128,6 +128,6 @@ class Api::V1::AccountsController < Api::BaseController
   end
 
   def check_enabled_registrations
-    forbidden unless allowed_registration?(request.remote_ip, invite)
+    forbidden
   end
 end

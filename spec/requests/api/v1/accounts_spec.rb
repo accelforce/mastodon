@@ -109,24 +109,20 @@ RSpec.describe '/api/v1/accounts' do
       context 'when date of birth is below age limit' do
         let(:date_of_birth) { 13.years.ago.strftime('%d.%m.%Y') }
 
-        it 'returns http unprocessable entity' do
+        it 'returns http forbidden' do
           subject
 
-          expect(response).to have_http_status(422)
-          expect(response.content_type)
-            .to start_with('application/json')
+          expect(response).to have_http_status(403)
         end
       end
 
       context 'when date of birth is over age limit' do
         let(:date_of_birth) { 17.years.ago.strftime('%d.%m.%Y') }
 
-        it 'creates a user', :aggregate_failures do
+        it 'returns http forbidden' do
           subject
 
-          expect(response).to have_http_status(200)
-          expect(response.content_type)
-            .to start_with('application/json')
+          expect(response).to have_http_status(403)
         end
       end
     end
@@ -134,27 +130,18 @@ RSpec.describe '/api/v1/accounts' do
     context 'when given truthy agreement' do
       let(:agreement) { 'true' }
 
-      it 'creates a user', :aggregate_failures do
+      it 'returns http forbidden' do
         subject
 
-        expect(response).to have_http_status(200)
-        expect(response.content_type)
-          .to start_with('application/json')
-        expect(response.parsed_body[:access_token]).to_not be_blank
-
-        user = User.find_by(email: 'hello@world.tld')
-        expect(user).to_not be_nil
-        expect(user.created_by_application_id).to eq client_app.id
+        expect(response).to have_http_status(403)
       end
     end
 
     context 'when given no agreement' do
-      it 'returns http unprocessable entity' do
+      it 'returns http forbidden' do
         subject
 
-        expect(response).to have_http_status(422)
-        expect(response.content_type)
-          .to start_with('application/json')
+        expect(response).to have_http_status(403)
       end
     end
   end
