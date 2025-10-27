@@ -2,9 +2,6 @@ name: Check i18n
 
 on:
   push:
-    branches:
-      - 'main'
-      - 'stable-*'
   pull_request:
     branches:
       - 'main'

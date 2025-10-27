@@ -1,5 +1,9 @@
 name: Test container image build
 on:
+  push:
+    branches-ignore:
+      - '*/odakyudon'
+      - '*/nitiasadon'
   pull_request:
     paths:
       - .github/workflows/build-nightly.yml
