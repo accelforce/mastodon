@@ -103,7 +103,7 @@ class NotifyService < BaseService
         SELECT COUNT(*)
         FROM ancestors
         JOIN statuses s ON s.id = ancestors.id
-        WHERE ancestors.mention_id IS NOT NULL AND s.account_id = :recipient_id AND s.visibility = 3
+        WHERE ancestors.mention_id IS NOT NULL AND s.account_id = :recipient_id AND s.visibility = 4
       SQL
     end
   end

@@ -11,6 +11,7 @@ import AlternateEmailIcon from '@/material-icons/400-24px/alternate_email.svg?re
 import LockIcon from '@/material-icons/400-24px/lock.svg?react';
 import PublicIcon from '@/material-icons/400-24px/public.svg?react';
 import QuietTimeIcon from '@/material-icons/400-24px/quiet_time.svg?react';
+import VisibilityOffIcon from '@/material-icons/400-24px/visibility_off.svg?react';
 import { DropdownSelector } from 'mastodon/components/dropdown_selector';
 import { Icon }  from 'mastodon/components/icon';
 
@@ -21,6 +22,8 @@ const messages = defineMessages({
   unlisted_long: { id: 'privacy.unlisted.long', defaultMessage: 'Fewer algorithmic fanfares' },
   private_short: { id: 'privacy.private.short', defaultMessage: 'Followers' },
   private_long: { id: 'privacy.private.long', defaultMessage: 'Only your followers' },
+  unleakable_short: { id: 'privacy.unleakable.short', defaultMessage: 'Followees' },
+  unleakable_long: { id: 'privacy.unleakable.long', defaultMessage: 'Visible for followed users only' },
   direct_short: { id: 'privacy.direct.short', defaultMessage: 'Specific people' },
   direct_long: { id: 'privacy.direct.long', defaultMessage: 'Everyone mentioned in the post' },
   change_privacy: { id: 'privacy.change', defaultMessage: 'Change post privacy' },
@@ -92,6 +95,7 @@ class PrivacyDropdown extends PureComponent {
       { icon: 'globe', iconComponent: PublicIcon, value: 'public', text: formatMessage(messages.public_short), meta: formatMessage(messages.public_long) },
       { icon: 'unlock', iconComponent: QuietTimeIcon,  value: 'unlisted', text: formatMessage(messages.unlisted_short), meta: formatMessage(messages.unlisted_long), extra: formatMessage(messages.unlisted_extra) },
       { icon: 'lock', iconComponent: LockIcon, value: 'private', text: formatMessage(messages.private_short), meta: formatMessage(messages.private_long) },
+      { icon: 'visibility_off', iconComponent: VisibilityOffIcon, value: 'unleakable', text: formatMessage(messages.unleakable_short), meta: formatMessage(messages.unleakable_long) },
     ];
 
     if (!this.props.noDirect) {

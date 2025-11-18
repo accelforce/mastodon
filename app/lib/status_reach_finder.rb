@@ -104,7 +104,7 @@ class StatusReachFinder
   def followers_scope
     if @status.in_reply_to_local_account? && distributable?
       @status.account.followers.or(@status.thread.account.followers.not_domain_blocked_by_account(@status.account))
-    elsif @status.direct_visibility? || @status.limited_visibility?
+    elsif @status.direct_visibility? || @status.unleakable_visibility? || @status.limited_visibility?
       Account.none
     else
       @status.account.followers

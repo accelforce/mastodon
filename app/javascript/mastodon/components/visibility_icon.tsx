@@ -4,6 +4,7 @@ import AlternateEmailIcon from '@/material-icons/400-24px/alternate_email.svg?re
 import LockIcon from '@/material-icons/400-24px/lock.svg?react';
 import PublicIcon from '@/material-icons/400-24px/public.svg?react';
 import QuietTimeIcon from '@/material-icons/400-24px/quiet_time.svg?react';
+import VisibilityOffIcon from '@/material-icons/400-24px/visibility_off.svg?react';
 import type { StatusVisibility } from 'mastodon/models/status';
 
 import { Icon } from './icon';
@@ -17,6 +18,10 @@ const messages = defineMessages({
   private_short: {
     id: 'privacy.private.short',
     defaultMessage: 'Followers',
+  },
+  unleakable_short: {
+    id: 'privacy.unleakable.short',
+    defaultMessage: 'Followees',
   },
   direct_short: {
     id: 'privacy.direct.short',
@@ -44,6 +49,11 @@ export const VisibilityIcon: React.FC<{ visibility: StatusVisibility }> = ({
       icon: 'lock',
       iconComponent: LockIcon,
       text: intl.formatMessage(messages.private_short),
+    },
+    unleakable: {
+      icon: 'low-vision',
+      iconComponent: VisibilityOffIcon,
+      text: intl.formatMessage(messages.unleakable_short),
     },
     direct: {
       icon: 'at',

@@ -16,13 +16,18 @@ const selector = createSelector(
   (privacy, locked, text) => ({
     needsLockWarning: privacy === 'private' && !locked,
     hashtagWarning: privacy !== 'public' && HASHTAG_PATTERN_REGEX.test(text),
+    unleakableWarning: privacy === 'unleakable',
     directMessageWarning: privacy === 'direct',
   }),
 );
 
 export const Warning = () => {
-  const { needsLockWarning, hashtagWarning, directMessageWarning } =
-    useAppSelector(selector);
+  const {
+    needsLockWarning,
+    hashtagWarning,
+    unleakableWarning,
+    directMessageWarning,
+  } = useAppSelector(selector);
   if (needsLockWarning) {
     return (
       <WarningMessage>
@@ -50,6 +55,25 @@ export const Warning = () => {
         <FormattedMessage
           id='compose_form.hashtag_warning'
           defaultMessage="This post won't be listed under any hashtag as it is unlisted. Only public posts can be searched by hashtag."
+        />
+      </WarningMessage>
+    );
+  }
+
+  if (unleakableWarning) {
+    return (
+      <WarningMessage>
+        <FormattedMessage
+          id='compose_form.unleakable_warning'
+          defaultMessage="This post is for followees. Only users you're following can view ones, unlike {private}."
+          values={{
+            private: (
+              <FormattedMessage
+                id='privacy.private.short'
+                defaultMessage='Followers'
+              />
+            ),
+          }}
         />
       </WarningMessage>
     );

@@ -1887,6 +1887,8 @@ en:
       private_long: Only show to followers
       public: Public
       public_long: Everyone can see
+      unleakable: Followees
+      unleakable_long: Visible for followed users only
       unlisted: Unlisted
       unlisted_long: Everyone can see, but not listed on public timelines
   statuses_cleanup:

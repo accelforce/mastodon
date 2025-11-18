@@ -48,6 +48,8 @@ class FanOutOnWriteService < BaseService
     when :public, :unlisted, :private
       deliver_to_all_followers!
       deliver_to_lists!
+    when :unleakable
+      deliver_to_all_followees!
     when :limited
       deliver_to_mentioned_followers!
     else
@@ -98,6 +100,14 @@ class FanOutOnWriteService < BaseService
     @account.followers_for_local_distribution.select(:id).reorder(nil).find_in_batches do |followers|
       FeedInsertWorker.push_bulk(followers) do |follower|
         [@status.id, follower.id, 'home', { 'update' => update? }]
+      end
+    end
+  end
+
+  def deliver_to_all_followees!
+    @account.followers_for_local_distribution.select(:id).reorder(nil).find_in_batches do |followers|
+      FeedInsertWorker.push_bulk(followers.filter { |follower| @account.following?(follower) }) do |followee|
+        [@status.id, followee.id, 'home', { 'update' => update? }]
       end
     end
   end

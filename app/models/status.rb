@@ -468,7 +468,7 @@ class Status < ApplicationRecord
   end
 
   def increment_counter_caches
-    return if direct_visibility?
+    return if unleakable_visibility? || direct_visibility?
 
     account&.increment_count!(:statuses_count)
     reblog&.increment_count!(:reblogs_count) if reblog?
@@ -476,7 +476,7 @@ class Status < ApplicationRecord
   end
 
   def decrement_counter_caches
-    return if direct_visibility? || new_record?
+    return if unleakable_visibility? || direct_visibility? || new_record?
 
     account&.decrement_count!(:statuses_count)
     reblog&.decrement_count!(:reblogs_count) if reblog?
