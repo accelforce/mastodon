@@ -13,6 +13,7 @@
 #  updated_at                    :datetime         not null
 #  note                          :text             default(""), not null
 #  display_name                  :string           default(""), not null
+#  cat                           :boolean          default(FALSE), not null
 #  uri                           :string           default(""), not null
 #  url                           :string
 #  avatar_file_name              :string

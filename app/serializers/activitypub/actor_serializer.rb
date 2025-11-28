@@ -13,7 +13,7 @@ class ActivityPub::ActorSerializer < ActivityPub::Serializer
   attributes :id, :type, :following, :followers,
              :inbox, :outbox, :featured, :featured_tags,
              :preferred_username, :name, :summary,
-             :url, :manually_approves_followers,
+             :url, :manually_approves_followers, :is_cat,
              :discoverable, :indexable, :published, :memorial
 
   has_one :public_key, serializer: ActivityPub::PublicKeySerializer
@@ -125,6 +125,10 @@ class ActivityPub::ActorSerializer < ActivityPub::Serializer
 
   def url
     object.instance_actor? ? about_more_url(instance_actor: true) : short_account_url(object)
+  end
+
+  def is_cat # rubocop:disable Naming/PredicatePrefix
+    object.cat
   end
 
   def avatar_exists?

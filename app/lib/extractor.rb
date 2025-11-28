@@ -11,7 +11,8 @@ module Extractor
     entities = extract_urls_with_indices(text, options) +
                extract_hashtags_with_indices(text, check_url_overlap: false) +
                extract_mentions_or_lists_with_indices(text) +
-               extract_extra_uris_with_indices(text)
+               extract_extra_uris_with_indices(text) +
+               extract_nyaizable_phrases(text)
 
     return [] if entities.empty?
 
@@ -110,5 +111,36 @@ module Extractor
     end
 
     possible_entries
+  end
+
+  def extract_nyaizable_phrases(text)
+    possible_entries = []
+
+    text.scan(/[なナﾅ]/) do
+      possible_entries << handle_nyaizable_match(:ja, $LAST_MATCH_INFO)
+    end
+
+    text.scan(/[나-낳]/) do
+      possible_entries << handle_nyaizable_match(:ko, $LAST_MATCH_INFO)
+    end
+
+    if block_given?
+      possible_entries.each do |nyaizable|
+        yield nyaizable[:nyaizable], nyaizable[:indices].first, nyaizable[:indices].last
+      end
+    end
+
+    possible_entries
+  end
+
+  def handle_nyaizable_match(lang, match_data)
+    start_position = match_data.char_begin(0)
+    end_position   = match_data.char_end(0)
+
+    {
+      nyaizable: match_data[0],
+      lang: lang,
+      indices: [start_position, end_position],
+    }
   end
 end

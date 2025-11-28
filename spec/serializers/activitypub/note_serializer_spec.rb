@@ -5,7 +5,7 @@ require 'rails_helper'
 RSpec.describe ActivityPub::NoteSerializer do
   subject { serialized_record_json(parent, described_class, adapter: ActivityPub::Adapter) }
 
-  let!(:account) { Fabricate(:account) }
+  let!(:account) { Fabricate(:account, cat: true) }
   let!(:other) { Fabricate(:account) }
   let!(:parent) { Fabricate(:status, account: account, visibility: :public, language: 'zh-TW') }
   let!(:reply_by_account_first) { Fabricate(:status, account: account, thread: parent, visibility: :public) }
@@ -40,5 +40,9 @@ RSpec.describe ActivityPub::NoteSerializer do
     include(reply_by_account_first.uri, reply_by_account_next.uri, reply_by_account_third.uri) # Public self replies
       .and(not_include(reply_by_other_first.uri)) # Replies from others
       .and(not_include(reply_by_account_visibility_direct.uri)) # Replies with direct visibility
+  end
+
+  it 'has a content which does not be nyaized' do
+    expect(subject['content']).to_not include('にゃ')
   end
 end

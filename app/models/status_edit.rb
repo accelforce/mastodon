@@ -42,7 +42,7 @@ class StatusEdit < ApplicationRecord
 
   scope :ordered, -> { order(id: :asc) }
 
-  delegate :local?, :application, :edited?, :edited_at,
+  delegate :local?, :application, :edited?, :edited_at, :cat?,
            :discarded?, :reply?, :visibility, :language, to: :status
 
   def with_media?

@@ -43,7 +43,7 @@ class ActivityPub::NoteSerializer < ActivityPub::Serializer
   end
 
   def content
-    status_content_format(object)
+    status_content_format(object, outgoing: true)
   end
 
   def content_map

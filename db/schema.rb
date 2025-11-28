@@ -184,6 +184,7 @@ ActiveRecord::Schema[8.0].define(version: 2025_10_27_060313) do
     t.string "featured_collection_url"
     t.jsonb "fields"
     t.string "actor_type"
+    t.boolean "cat", default: false, null: false
     t.boolean "discoverable"
     t.string "also_known_as", array: true
     t.datetime "silenced_at", precision: nil

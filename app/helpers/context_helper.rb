@@ -10,6 +10,7 @@ module ContextHelper
     manually_approves_followers: { 'manuallyApprovesFollowers' => 'as:manuallyApprovesFollowers' },
     sensitive: { 'sensitive' => 'as:sensitive' },
     hashtag: { 'Hashtag' => 'as:Hashtag' },
+    is_cat: { 'isCat' => 'as:isCat' },
     moved_to: { 'movedTo' => { '@id' => 'as:movedTo', '@type' => '@id' } },
     also_known_as: { 'alsoKnownAs' => { '@id' => 'as:alsoKnownAs', '@type' => '@id' } },
     emoji: { 'toot' => 'http://joinmastodon.org/ns#', 'Emoji' => 'toot:Emoji' },
