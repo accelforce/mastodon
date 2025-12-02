@@ -28,14 +28,14 @@ jobs:
 
       matrix:
         postgres:
-          - 14-alpine
-          - 15-alpine
-          - 16-alpine
-          - 17-alpine
+          - latest-alpine-14
+          - latest-alpine-15
+          - latest-alpine-16
+          - latest-alpine-17
 
     services:
       postgres:
-        image: postgres:${{ matrix.postgres}}
+        image: groonga/pgroonga:${{ matrix.postgres }}
         env:
           POSTGRES_PASSWORD: postgres
           POSTGRES_USER: postgres
