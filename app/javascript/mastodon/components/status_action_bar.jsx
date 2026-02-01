@@ -372,7 +372,7 @@ class StatusActionBar extends ImmutablePureComponent {
 
     const bookmarkTitle = intl.formatMessage(status.get('bookmarked') ? messages.removeBookmark : messages.bookmark);
     const favouriteTitle = intl.formatMessage(status.get('favourited') ? messages.removeFavourite : messages.favourite);
-    const isReply = status.get('in_reply_to_account_id') === status.getIn(['account', 'id']);
+    const isReply = false; // always show reply icon as reply-all
 
     return (
       <div className='status__action-bar'>
