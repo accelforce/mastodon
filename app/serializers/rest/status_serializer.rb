@@ -159,6 +159,10 @@ class REST::StatusSerializer < ActiveModel::Serializer
     object.active_mentions.to_a.sort_by(&:id)
   end
 
+  def emojis
+    object.emojis + object.avatar_emojis
+  end
+
   private
 
   def relationships

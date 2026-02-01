@@ -33,7 +33,7 @@ module FormattingHelper
   def rss_status_content_format(status)
     prerender_custom_emojis(
       wrapped_status_content_format(status),
-      status.emojis,
+      status.emojis + status.avatar_emojis,
       style: SYNDICATED_EMOJI_STYLES
     ).to_str
   end

@@ -75,6 +75,15 @@ class StatusEdit < ApplicationRecord
     @emojis = CustomEmoji.from_text(fields.join(' '), status.account.domain)
   end
 
+  def avatar_emojis
+    return @avatar_emojis if defined?(@avatar_emojis)
+
+    fields = [spoiler_text, text]
+    fields += preloadable_poll.options unless preloadable_poll.nil?
+
+    @avatar_emojis = AvatarEmoji.from_text(fields.join(' '), status.account.domain)
+  end
+
   def ordered_media_attachments
     return @ordered_media_attachments if defined?(@ordered_media_attachments)
 

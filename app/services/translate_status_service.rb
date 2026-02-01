@@ -102,7 +102,7 @@ class TranslateStatusService < BaseService
   end
 
   def wrap_emoji_shortcodes(text)
-    EmojiFormatter.new(text, @status.emojis, { raw_shortcode: true }).to_s
+    EmojiFormatter.new(text, @status.emojis + @status.avatar_emojis, { raw_shortcode: true }).to_s
   end
 
   def unwrap_emoji_shortcodes(html)

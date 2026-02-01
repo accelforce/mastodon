@@ -289,6 +289,15 @@ class Status < ApplicationRecord
     @emojis = CustomEmoji.from_text(fields.join(' '), account.domain)
   end
 
+  def avatar_emojis
+    return @avatar_emojis if defined?(@avatar_emojis)
+
+    fields = [spoiler_text, text]
+    fields += preloadable_poll.options unless preloadable_poll.nil?
+
+    @avatar_emojis = AvatarEmoji.from_text(fields.join(' '), account.domain)
+  end
+
   def ordered_media_attachments
     if ordered_media_attachment_ids.nil?
       # NOTE: sort Ruby-side to avoid hitting the database when the status is

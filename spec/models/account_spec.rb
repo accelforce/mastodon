@@ -428,6 +428,18 @@ RSpec.describe Account do
     it 'matches usernames containing uppercase characters' do
       expect(subject.match('Hello to @aLice@Example.com from me')[1]).to eq 'aLice@Example.com'
     end
+
+    it 'matches colon-appended username' do
+      expect(subject.match('@alice: I want everybody to see this')[1]).to eq 'alice'
+    end
+
+    it 'does not match colon-prepend username' do
+      expect(subject.match(':@alice I want everybody to see this')).to be_nil
+    end
+
+    it 'does not match colon-surrounded username' do
+      expect(subject.match(':@alice: I want everybody to see this')).to be_nil
+    end
   end
 
   describe 'Callbacks' do
