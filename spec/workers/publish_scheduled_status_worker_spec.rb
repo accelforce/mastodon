@@ -14,7 +14,7 @@ RSpec.describe PublishScheduledStatusWorker do
 
     context 'when the account is not disabled' do
       it 'creates a status and removes scheduled record' do
-        expect(scheduled_status.account.statuses.first.text).to eq 'Hello world, future!'
+        expect(scheduled_status.account.statuses.first.text).to eq "Hello world, future! ##{ProcessHashtagsService::DEFAULT_HASHTAG}"
 
         expect(ScheduledStatus.find_by(id: scheduled_status.id)).to be_nil
       end

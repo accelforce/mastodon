@@ -12,7 +12,7 @@ RSpec.describe PostStatusService do
     status = subject.call(account, text: text)
 
     expect(status).to be_persisted
-    expect(status.text).to eq text
+    expect(status.text).to eq "#{text} ##{ProcessHashtagsService::DEFAULT_HASHTAG}"
   end
 
   it 'creates a new response status' do

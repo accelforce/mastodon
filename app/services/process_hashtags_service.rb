@@ -1,10 +1,13 @@
 # frozen_string_literal: true
 
 class ProcessHashtagsService < BaseService
+  DEFAULT_HASHTAG = 'nitiasa'
+  IGNORE_DEFAULT_HASHTAG = 'notag'
+
   def call(status, raw_tags = [])
     @status        = status
     @account       = status.account
-    @raw_tags      = status.local? ? Extractor.extract_hashtags(status.text) : raw_tags
+    @raw_tags      = status.local? ? local_tags : raw_tags
     @previous_tags = status.tags.to_a
     @current_tags  = []
 
@@ -13,6 +16,17 @@ class ProcessHashtagsService < BaseService
   end
 
   private
+
+  def local_tags
+    tags = Extractor.extract_hashtags(@status.text)
+
+    if tags.exclude?(DEFAULT_HASHTAG) && tags.exclude?(IGNORE_DEFAULT_HASHTAG) && @status.public_visibility? && !@status.reply?
+      tags << DEFAULT_HASHTAG
+      @status.update(text: "#{@status.text} ##{DEFAULT_HASHTAG}")
+    end
+
+    tags
+  end
 
   def assign_tags!
     @status.tags = @current_tags = Tag.find_or_create_by_names(@raw_tags)

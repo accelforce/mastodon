@@ -1010,7 +1010,7 @@ const startServer = async () => {
       break;
     case 'public:local':
       resolve({
-        channelIds: ['timeline:public:local'],
+        channelIds: ['timeline:hashtag:nitiasa'],
         options: { needsFiltering: true },
       });
 

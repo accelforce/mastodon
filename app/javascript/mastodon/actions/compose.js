@@ -2,6 +2,7 @@ import { defineMessages } from 'react-intl';
 
 import axios from 'axios';
 import { throttle } from 'lodash';
+import TwitterText from 'twitter-text';
 
 import api from 'mastodon/api';
 import { browserHistory } from 'mastodon/components/router';
@@ -190,13 +191,19 @@ export function directCompose(account) {
 
 export function submitCompose(successCallback) {
   return function (dispatch, getState) {
-    const status   = getState().getIn(['compose', 'text'], '');
+    const rStatus  = getState().getIn(['compose', 'text'], '');
     const media    = getState().getIn(['compose', 'media_attachments']);
     const statusId = getState().getIn(['compose', 'id'], null);
 
-    if ((!status || !status.length) && media.size === 0) {
+    if ((!rStatus || !rStatus.length) && media.size === 0) {
       return;
     }
+
+    const { status, addToLocal } = handleDefaultTag(
+      rStatus,
+      getState().getIn(['compose', 'privacy']),
+      getState().getIn(['compose', 'in_reply_to']),
+    );
 
     dispatch(submitComposeRequest());
 
@@ -267,7 +274,9 @@ export function submitCompose(successCallback) {
       }
 
       if (statusId === null && response.data.in_reply_to_id === null && response.data.visibility === 'public') {
-        insertIfOnline('community');
+        if (addToLocal) {
+          insertIfOnline('community');
+        }
         insertIfOnline('public');
         insertIfOnline(`account:${response.data.account.id}`);
       }
@@ -283,6 +292,22 @@ export function submitCompose(successCallback) {
     });
   };
 }
+
+const DEFAULT_HASHTAG = 'nitiasa';
+const IGNORE_DEFAULT_HASHTAG = 'notag';
+
+const handleDefaultTag = (status, visibility, in_reply_to) => {
+  const tags = TwitterText.extractHashtags(status);
+  const hasHashtags = tags.length > 0;
+  const hasDefaultHashtag = hasHashtags ? tags.some(tag => tag === DEFAULT_HASHTAG) : false;
+  const hasNoTagHashtag   = hasHashtags ? tags.some(tag => tag === IGNORE_DEFAULT_HASHTAG) : false;
+  const isPublic = (visibility === 'public');
+
+  if (!hasDefaultHashtag && !hasNoTagHashtag && isPublic && !in_reply_to) {
+    return { status: `${status} #${DEFAULT_HASHTAG}`, addToLocal: true };
+  }
+  return { status, addToLocal: hasDefaultHashtag };
+};
 
 export function submitComposeRequest() {
   return {

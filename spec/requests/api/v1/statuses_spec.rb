@@ -300,7 +300,7 @@ RSpec.describe '/api/v1/statuses' do
         expect(response).to have_http_status(200)
         expect(response.content_type)
           .to start_with('application/json')
-        expect(status.reload.text).to eq 'I am updated'
+        expect(status.reload.text).to eq 'I am updated #nitiasa'
       end
     end
   end

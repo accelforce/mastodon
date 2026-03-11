@@ -31,12 +31,22 @@ class Api::V1::Timelines::PublicController < Api::V1::Timelines::BaseController
   end
 
   def public_feed
-    PublicFeed.new(
-      current_account,
-      local: truthy_param?(:local),
-      remote: truthy_param?(:remote),
-      only_media: truthy_param?(:only_media)
-    )
+    if truthy_param?(:local) && !truthy_param?(:remote)
+      TagFeed.new(
+        Tag.find_by(name: ProcessHashtagsService::DEFAULT_HASHTAG),
+        current_account,
+        local: true,
+        remote: true,
+        only_media: truthy_param?(:only_media)
+      )
+    else
+      PublicFeed.new(
+        current_account,
+        local: truthy_param?(:local),
+        remote: truthy_param?(:remote),
+        only_media: truthy_param?(:only_media)
+      )
+    end
   end
 
   def next_path

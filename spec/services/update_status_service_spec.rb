@@ -31,14 +31,14 @@ RSpec.describe UpdateStatusService do
     end
 
     it 'updates text, resets card, saves edit history' do
-      subject.call(status, status.account_id, text: 'Bar')
+      subject.call(status, status.account_id, text: 'Bar #nitiasa')
 
       expect(status.reload)
         .to have_attributes(
-          text: 'Bar',
+          text: 'Bar #nitiasa',
           preview_card: be_nil
         )
-      expect(status.edits.ordered.pluck(:text)).to eq %w(Foo Bar)
+      expect(status.edits.ordered.pluck(:text)).to eq ['Foo', 'Bar #nitiasa']
     end
   end
 
@@ -56,7 +56,7 @@ RSpec.describe UpdateStatusService do
       expect(status.reload.spoiler_text)
         .to eq 'Bar'
       expect(status.edits.ordered.pluck(:text, :spoiler_text))
-        .to eq [['Foo', ''], ['Foo', 'Bar']]
+        .to eq [['Foo', ''], ['Foo #nitiasa', 'Bar']]
     end
   end
 
@@ -168,7 +168,7 @@ RSpec.describe UpdateStatusService do
     it 'changes tags' do
       subject.call(status, status.account_id, text: 'Hello #bar')
 
-      expect(status.tags.pluck(:name)).to eq %w(bar)
+      expect(status.tags.pluck(:name)).to eq %w(nitiasa bar)
     end
   end
 
