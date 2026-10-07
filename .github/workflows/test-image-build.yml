@@ -1,5 +1,6 @@
 name: Test container image build
 on:
+  push:
   pull_request:
     paths:
       - .github/workflows/build-nightly.yml
