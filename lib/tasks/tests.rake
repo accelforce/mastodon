@@ -189,6 +189,16 @@ namespace :tests do
         exit(1)
       end
 
+      unless Status.find(9001).quote.accepted? && Status.find(9002).quote.accepted?
+        puts 'Quotes not migrated as expected'
+        exit(1)
+      end
+
+      unless Status.find(1).quotes_count == 1 && Status.find(2).quotes_count == 1
+        puts 'Quote counts not migrated as expected'
+        exit(1)
+      end
+
       puts 'No errors found. Database state is consistent with a successful migration process.'
     end
 
@@ -233,6 +243,12 @@ namespace :tests do
           (token, application_id, scopes, resource_owner_id, created_at)
         VALUES
           ('secret', 2, 'write:accounts read:me', 4, now());
+
+        INSERT INTO "statuses"
+          (id, text, local, account_id, quote_id, created_at, updated_at)
+        VALUES
+          (9001, 'This is a quote status', true, 1, 1, now(), now()),
+          (9002, 'This is a remote quote status', false, 1, 2, now(), now());
 
         /* Duplicate remote accounts
            Before Mastodon v4.7.0, we had no uniqueness constraint on account `uri`, which lead to issues.
