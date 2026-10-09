@@ -47,4 +47,18 @@ RSpec.describe REST::NotificationSerializer do
   it_behaves_like 'with fallback notifications', 'admin.report', :report
   it_behaves_like 'with fallback notifications', 'added_to_collection', :collection_item
   it_behaves_like 'with fallback notifications', 'collection_update', :collection
+
+  context 'with a notification about an unleakable post' do
+    let(:author) { Fabricate(:account) }
+    let(:status) { Fabricate(:status, account: author, visibility: :unleakable) }
+    let(:notification) { Fabricate(:notification, account: current_user.account, activity: status, type: :status) }
+
+    it 'hides the post after its author stops following the recipient' do
+      author.follow!(current_user.account)
+      expect(subject['status']).to include('id' => status.id.to_s)
+
+      author.unfollow!(current_user.account)
+      expect(serialized_record_json(notification, described_class, options: { scope: current_user, scope_name: :current_user })['status']).to be_nil
+    end
+  end
 end

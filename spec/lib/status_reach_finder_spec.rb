@@ -12,6 +12,22 @@ RSpec.describe StatusReachFinder do
       let(:alice) { Fabricate(:account, username: 'alice') }
       let(:status) { Fabricate(:status, account: alice, thread: parent_status, visibility: visibility) }
 
+      context 'when the post is unleakable' do
+        let(:visibility) { :unleakable }
+        let(:remote) { Fabricate(:account, domain: 'example.com', inbox_url: 'https://example.com/inbox') }
+
+        before do
+          remote.follow!(alice)
+          Fabricate(:mention, status: status, account: remote)
+          Fabricate(:favourite, status: status, account: remote)
+        end
+
+        it 'has no remote recipients, including unsafe deletion reach' do
+          expect(subject.inboxes).to be_empty
+          expect(described_class.new(status, unsafe: true).inboxes).to be_empty
+        end
+      end
+
       context 'when it contains mentions of remote accounts' do
         let(:bob) { Fabricate(:account, username: 'bob', domain: 'foo.bar', protocol: :activitypub, inbox_url: 'https://foo.bar/inbox') }
 

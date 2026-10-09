@@ -77,7 +77,7 @@ class NotifyService < BaseService
       # This queries private mentions from the recipient to the sender up in the thread.
       # This allows up to 100 messages that do not match in the thread, allowing conversations
       # involving multiple people.
-      Status.count_by_sql([<<~SQL.squish, id: @notification.target_status.in_reply_to_id, recipient_id: @recipient.id, sender_id: @sender.id, depth_limit: 100])
+      Status.count_by_sql([<<~SQL.squish, id: @notification.target_status.in_reply_to_id, recipient_id: @recipient.id, sender_id: @sender.id, depth_limit: 100, direct_visibility: Status.visibilities[:direct]])
         WITH RECURSIVE ancestors(id, in_reply_to_id, mention_id, path, depth) AS (
             SELECT s.id, s.in_reply_to_id, m.id, ARRAY[s.id], 0
             FROM statuses s
@@ -94,7 +94,7 @@ class NotifyService < BaseService
         SELECT COUNT(*)
         FROM ancestors
         JOIN statuses s ON s.id = ancestors.id
-        WHERE ancestors.mention_id IS NOT NULL AND s.account_id = :recipient_id AND s.visibility = 3
+        WHERE ancestors.mention_id IS NOT NULL AND s.account_id = :recipient_id AND s.visibility = :direct_visibility
       SQL
     end
 

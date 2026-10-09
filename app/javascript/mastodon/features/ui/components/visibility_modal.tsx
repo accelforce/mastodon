@@ -21,6 +21,7 @@ import CloseIcon from '@/material-icons/400-24px/close.svg?react';
 import LockIcon from '@/material-icons/400-24px/lock.svg?react';
 import PublicIcon from '@/material-icons/400-24px/public.svg?react';
 import QuietTimeIcon from '@/material-icons/400-24px/quiet_time.svg?react';
+import VisibilityOffIcon from '@/material-icons/400-24px/visibility_off.svg?react';
 
 import type { BaseConfirmationModalProps } from './confirmation_modals/confirmation_modal';
 
@@ -72,8 +73,8 @@ const selectStatusPolicy = createAppSelector(
       (status.getIn(['quote_approval', 'automatic', 0]) as string) || 'nobody';
     const visibility = status.get('visibility') as StatusVisibility;
 
-    // If the status is private or direct, it cannot be quoted by anyone.
-    if (visibility === 'private' || visibility === 'direct') {
+    // Non-public posts cannot be quoted by others.
+    if (['private', 'unleakable', 'direct'].includes(visibility)) {
       return 'nobody';
     }
 
@@ -104,7 +105,9 @@ const selectDisablePublicVisibilities = createAppSelector(
       return false;
     }
 
-    return status.get('visibility') === 'private';
+    return ['private', 'unleakable'].includes(
+      status.get('visibility') as StatusVisibility,
+    );
   },
 );
 
@@ -127,8 +130,9 @@ export const VisibilityModal: FC<VisibilityModalProps> = forwardRef(
     const [quotePolicy, setQuotePolicy] = useState(currentQuotePolicy);
 
     const disableVisibility = !!statusId;
-    const disableQuotePolicy =
-      visibility === 'private' || visibility === 'direct';
+    const disableQuotePolicy = ['private', 'unleakable', 'direct'].includes(
+      visibility,
+    );
     const disablePublicVisibilities = useAppSelector(
       selectDisablePublicVisibilities,
     );
@@ -144,6 +148,13 @@ export const VisibilityModal: FC<VisibilityModalProps> = forwardRef(
           meta: intl.formatMessage(privacyMessages.private_long),
           icon: 'lock',
           iconComponent: LockIcon,
+        },
+        {
+          value: 'unleakable',
+          text: intl.formatMessage(privacyMessages.unleakable_short),
+          meta: intl.formatMessage(privacyMessages.unleakable_long),
+          icon: 'visibility_off',
+          iconComponent: VisibilityOffIcon,
         },
         {
           value: 'direct',
@@ -285,7 +296,7 @@ export const VisibilityModal: FC<VisibilityModalProps> = forwardRef(
                 >
                   <FormattedMessage
                     id='visibility_modal.helper.privacy_private_self_quote'
-                    defaultMessage='Self-quotes of private posts cannot be made public.'
+                    defaultMessage='Self-quotes of followers-only or followees-only posts cannot be made public.'
                   />
                 </p>
               )}
@@ -388,6 +399,15 @@ const QuotePolicyHelper: FC<
       <FormattedMessage
         id='visibility_modal.helper.direct_quoting'
         defaultMessage="Private mentions authored on Mastodon can't be quoted by others."
+      />
+    );
+  }
+
+  if (visibility === 'unleakable') {
+    hintText = (
+      <FormattedMessage
+        id='visibility_modal.helper.unleakable_quoting'
+        defaultMessage='Followees-only posts cannot be quoted by others.'
       />
     );
   }

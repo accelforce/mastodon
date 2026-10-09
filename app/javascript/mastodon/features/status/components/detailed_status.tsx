@@ -321,7 +321,11 @@ export const DetailedStatus: React.FC<{
     </>
   );
 
-  if (['private', 'direct'].includes(status.get('visibility') as string)) {
+  if (
+    ['private', 'unleakable', 'direct'].includes(
+      status.get('visibility') as string,
+    )
+  ) {
     reblogLink = '';
   } else {
     reblogLink = (
@@ -345,7 +349,11 @@ export const DetailedStatus: React.FC<{
     );
   }
 
-  if (['private', 'direct'].includes(status.get('visibility') as string)) {
+  if (
+    ['private', 'unleakable', 'direct'].includes(
+      status.get('visibility') as string,
+    )
+  ) {
     quotesLink = '';
   } else if (signedIn) {
     quotesLink = (

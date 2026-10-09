@@ -52,7 +52,7 @@ module Mastodon::CLI
       account.account_stat.tap do |account_stat|
         account_stat.following_count = account.active_relationships.count
         account_stat.followers_count = account.passive_relationships.count
-        account_stat.statuses_count  = account.statuses.not_direct_visibility.count
+        account_stat.statuses_count  = account.statuses.not_direct_visibility.where.not(visibility: :unleakable).count
 
         account_stat.save if account_stat.changed?
       end

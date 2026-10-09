@@ -6,7 +6,9 @@ class UnmergeWorker
 
   sidekiq_options queue: 'pull'
 
-  def perform(from_account_id, into_id, type = 'home')
+  def perform(from_account_id, into_id, type = 'home', options = {})
+    @options = options.symbolize_keys
+
     with_primary do
       @from_account = Account.find(from_account_id)
     end
@@ -29,7 +31,7 @@ class UnmergeWorker
     end
 
     with_read_replica do
-      FeedManager.instance.unmerge_from_home(@from_account, @into_account)
+      FeedManager.instance.unmerge_from_home(@from_account, @into_account, **@options)
     end
   end
 
@@ -39,7 +41,7 @@ class UnmergeWorker
     end
 
     with_read_replica do
-      FeedManager.instance.unmerge_from_list(@from_account, @into_list)
+      FeedManager.instance.unmerge_from_list(@from_account, @into_list, **@options)
     end
   end
 end

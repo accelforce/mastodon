@@ -21,5 +21,15 @@ RSpec.describe ActivityPub::DistributePollUpdateWorker do
       expect(ActivityPub::DeliveryWorker)
         .to have_enqueued_sidekiq_job(match_json_values(type: 'Update'), account.id, 'http://example.com')
     end
+
+    it 'does not deliver unleakable poll updates to followers, mentions, or voters' do
+      status.update!(visibility: :unleakable)
+      Fabricate(:mention, status: status, account: follower)
+      Fabricate(:poll_vote, poll: poll, account: follower)
+
+      subject.perform(status.id)
+
+      expect(ActivityPub::DeliveryWorker).to_not have_enqueued_sidekiq_job
+    end
   end
 end

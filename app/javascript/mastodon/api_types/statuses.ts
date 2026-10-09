@@ -12,6 +12,7 @@ export type StatusVisibility =
   | 'public'
   | 'unlisted'
   | 'private'
+  | 'unleakable'
   // | 'limited' // This is never exposed to the API (they become `private`)
   | 'direct';
 
@@ -152,5 +153,7 @@ export interface ApiStatusTranslationJSON {
 export function isStatusVisibility(
   visibility: string,
 ): visibility is StatusVisibility {
-  return ['public', 'unlisted', 'private', 'direct'].includes(visibility);
+  return ['public', 'unlisted', 'private', 'unleakable', 'direct'].includes(
+    visibility,
+  );
 }

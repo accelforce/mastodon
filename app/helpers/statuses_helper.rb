@@ -5,6 +5,7 @@ module StatusesHelper
     public: 'globe',
     unlisted: 'lock_open',
     private: 'lock',
+    unleakable: 'visibility_off',
     direct: 'alternate_email',
   }.freeze
 

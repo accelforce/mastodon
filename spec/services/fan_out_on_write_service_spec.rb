@@ -93,6 +93,28 @@ RSpec.describe FanOutOnWriteService do
     end
   end
 
+  context 'when status is unleakable' do
+    let(:visibility) { 'unleakable' }
+    let(:list) { Fabricate(:list, account: tom, exclusive: true) }
+
+    before do
+      alice.follow!(tom)
+      Fabricate(:list_account, list: list, account: alice)
+    end
+
+    it 'delivers to authorized followers and lists without broadcasting', :inline_jobs do
+      outsider = Fabricate(:user).account
+      outsider.follow!(alice)
+      subject.call(status)
+
+      expect(status.id).to be_in(home_feed_of(alice)).and be_in(home_feed_of(bob))
+      expect(status.id).to_not be_in(home_feed_of(tom))
+      expect(status.id).to_not be_in(home_feed_of(outsider))
+      expect(ListFeed.new(list).get(10).map(&:id)).to include(status.id)
+      expect_no_broadcasting
+    end
+  end
+
   context 'when status is private' do
     let(:visibility) { 'private' }
 

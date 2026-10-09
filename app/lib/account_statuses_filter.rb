@@ -37,7 +37,7 @@ class AccountStatusesFilter
     if anonymous?
       account.statuses.distributable_visibility
     elsif author?
-      exclude_direct? ? account.statuses.where(visibility: %i(public unlisted private)) : account.statuses.all # NOTE: #merge! does not work without the #all
+      exclude_direct? ? account.statuses.list_eligible_visibility : account.statuses.all # NOTE: #merge! does not work without the #all
     elsif blocked?
       Status.none
     else
@@ -46,14 +46,14 @@ class AccountStatusesFilter
   end
 
   def filtered_scope
-    scope = account.statuses
+    scope = account.statuses.left_outer_joins(:mentions)
+    visibilities = follower? ? %i(public unlisted private) : %i(public unlisted)
+    visibilities << :unleakable if account.following?(current_account)
 
-    if exclude_direct?
-      scope = scope.where(visibility: follower? ? %i(public unlisted private) : %i(public unlisted))
-    else
-      scope = account.statuses.left_outer_joins(:mentions)
-      scope.merge!(scope.where(visibility: follower? ? %i(public unlisted private) : %i(public unlisted)).or(scope.where(mentions: { account_id: current_account.id })).group(Status.arel_table[:id]))
-    end
+    mentioned_scope = scope.where(mentions: { account_id: current_account.id })
+    mentioned_scope = mentioned_scope.unleakable_visibility if exclude_direct?
+
+    scope = scope.where(visibility: visibilities).or(mentioned_scope).group(Status.arel_table[:id])
 
     scope.merge!(filtered_reblogs_scope) if reblogs_may_occur?
 

@@ -339,6 +339,15 @@ RSpec.describe PostStatusService do
     expect(status).to be_direct_visibility
   end
 
+  it 'downgrades public self-quotes of unleakable posts' do
+    account = Fabricate(:account)
+    quoted_status = Fabricate(:status, account: account, visibility: :unleakable)
+
+    status = subject.call(account, text: 'test', quoted_status: quoted_status, visibility: :public)
+
+    expect(status).to be_unleakable_visibility
+  end
+
   it 'returns existing status when used twice with idempotency key' do
     account = Fabricate(:account)
     status1 = described_class.new.call(account, text: 'test', idempotency: 'meepmeep')

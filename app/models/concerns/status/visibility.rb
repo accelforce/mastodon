@@ -5,12 +5,12 @@ module Status::Visibility
 
   included do
     enum :visibility,
-         { public: 0, unlisted: 1, private: 2, direct: 3, limited: 4 },
+         { public: 0, unlisted: 1, private: 2, unleakable: 3, direct: 4, limited: 5 },
          suffix: :visibility,
          validate: true
 
     scope :distributable_visibility, -> { where(visibility: %i(public unlisted)) }
-    scope :list_eligible_visibility, -> { where(visibility: %i(public unlisted private)) }
+    scope :list_eligible_visibility, -> { where(visibility: %i(public unlisted private unleakable)) }
     scope :not_direct_visibility, -> { where.not(visibility: :direct) }
 
     validates :visibility, exclusion: { in: %w(direct limited) }, if: :reblog?

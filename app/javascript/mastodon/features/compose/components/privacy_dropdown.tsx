@@ -10,6 +10,7 @@ import AlternateEmailIcon from '@/material-icons/400-24px/alternate_email.svg?re
 import LockIcon from '@/material-icons/400-24px/lock.svg?react';
 import PublicIcon from '@/material-icons/400-24px/public.svg?react';
 import QuietTimeIcon from '@/material-icons/400-24px/quiet_time.svg?react';
+import VisibilityOffIcon from '@/material-icons/400-24px/visibility_off.svg?react';
 import { DropdownSelector } from 'mastodon/components/dropdown_selector';
 import { Icon } from 'mastodon/components/icon';
 
@@ -32,6 +33,14 @@ export const messages = defineMessages({
   private_long: {
     id: 'privacy.private.long',
     defaultMessage: 'Only your followers',
+  },
+  unleakable_short: {
+    id: 'privacy.unleakable.short',
+    defaultMessage: 'Followees only',
+  },
+  unleakable_long: {
+    id: 'privacy.unleakable.long',
+    defaultMessage: 'Only people you follow and people mentioned in the post',
   },
   direct_short: {
     id: 'privacy.direct.short',
@@ -123,6 +132,13 @@ const PrivacyDropdown: React.FC<PrivacyDropdownProps> = ({
       value: 'private',
       text: intl.formatMessage(messages.private_short),
       meta: intl.formatMessage(messages.private_long),
+    },
+    {
+      icon: 'visibility_off',
+      iconComponent: VisibilityOffIcon,
+      value: 'unleakable',
+      text: intl.formatMessage(messages.unleakable_short),
+      meta: intl.formatMessage(messages.unleakable_long),
     },
   ];
 

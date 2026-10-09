@@ -35,7 +35,7 @@ class FanOutOnWriteService < BaseService
     end
 
     case @status.visibility.to_sym
-    when :public, :unlisted, :private
+    when :public, :unlisted, :private, :unleakable
       deliver_to_all_followers!
       deliver_to_lists!
     when :limited

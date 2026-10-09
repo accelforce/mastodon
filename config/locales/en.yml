@@ -2171,6 +2171,8 @@ en:
       private: Followers only
       public: Public
       public_long: Anyone on and off Mastodon
+      unleakable: Followees only
+      unleakable_long: Only people you follow and people mentioned in the post
       unlisted: Quiet public
       unlisted_long: Hidden from Mastodon search results, trending, and public timelines
   statuses_cleanup:

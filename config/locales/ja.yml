@@ -1862,6 +1862,8 @@ ja:
       private: フォロワーのみ
       public: 公開
       public_long: すべての人 (Mastodon以外も含む)
+      unleakable: 限定公開
+      unleakable_long: フォローしているユーザーとメンションしたユーザーのみ
       unlisted: ひかえめな公開
       unlisted_long: Mastodonの検索結果、トレンド、公開タイムラインに表示しない
   statuses_cleanup:

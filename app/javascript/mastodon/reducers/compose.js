@@ -233,7 +233,7 @@ const insertEmoji = (state, position, emojiData, needsSpace) => {
 };
 
 const privacyPreference = (a, b) => {
-  const order = ['public', 'unlisted', 'private', 'direct'];
+  const order = ['public', 'unlisted', 'private', 'unleakable', 'direct'];
   return order[Math.max(order.indexOf(a), order.indexOf(b), 0)];
 };
 
@@ -351,8 +351,8 @@ export const composeReducer = (state = initialState, action) => {
       .update('spoiler', spoiler => (spoiler) || !!status.get('spoiler_text'))
       .update('spoiler_text', (spoiler_text) => spoiler_text || status.get('spoiler_text'))
       .update('privacy', (visibility) => {
-        if (['public', 'unlisted'].includes(visibility) && status.get('visibility') === 'private') {
-          return 'private';
+        if (['public', 'unlisted'].includes(visibility) && ['private', 'unleakable'].includes(status.get('visibility'))) {
+          return status.get('visibility');
         }
         return visibility;
       });
