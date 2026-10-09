@@ -10,6 +10,8 @@ class StatusReachFinder
   end
 
   def inboxes
+    return [] if @status.unleakable_visibility?
+
     (reached_account_inboxes + followers_inboxes + relay_inboxes).uniq
   end
 

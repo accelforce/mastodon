@@ -180,12 +180,16 @@ class FeedManager
   # Remove an account's statuses from a home feed
   # @param [Account] from_account
   # @param [Account] into_account
+  # @param [Boolean] only_unleakable
   # @return [void]
-  def unmerge_from_home(from_account, into_account)
+  def unmerge_from_home(from_account, into_account, only_unleakable: false)
     timeline_key        = key(:home, into_account.id)
     timeline_status_ids = redis.zrange(timeline_key, 0, -1)
 
-    from_account.statuses.select(:id, :reblog_of_id).where(id: timeline_status_ids).reorder(nil).find_each do |status|
+    scope = from_account.statuses.select(:id, :reblog_of_id).where(id: timeline_status_ids)
+    scope = scope.unleakable_visibility.where.not(id: Mention.where(account_id: into_account.id).select(:status_id)) if only_unleakable
+
+    scope.reorder(nil).find_each do |status|
       remove_from_feed(:home, into_account.id, status, aggregate_reblogs: into_account.user&.aggregates_reblogs?)
     end
   end
@@ -193,12 +197,16 @@ class FeedManager
   # Remove an account's statuses from a list feed
   # @param [Account] from_account
   # @param [List] list
+  # @param [Boolean] only_unleakable
   # @return [void]
-  def unmerge_from_list(from_account, list)
+  def unmerge_from_list(from_account, list, only_unleakable: false)
     timeline_key        = key(:list, list.id)
     timeline_status_ids = redis.zrange(timeline_key, 0, -1)
 
-    from_account.statuses.select(:id, :reblog_of_id).where(id: timeline_status_ids).reorder(nil).find_each do |status|
+    scope = from_account.statuses.select(:id, :reblog_of_id).where(id: timeline_status_ids)
+    scope = scope.unleakable_visibility.where.not(id: Mention.where(account_id: list.account_id).select(:status_id)) if only_unleakable
+
+    scope.reorder(nil).find_each do |status|
       remove_from_feed(:list, list.id, status, aggregate_reblogs: list.account.user&.aggregates_reblogs?)
     end
   end
@@ -295,10 +303,9 @@ class FeedManager
         oldest_home_score = redis.zrange(timeline_key, 0, 0, with_scores: true).first.last.to_i
         last_status_score = Mastodon::Snowflake.id_at(target_account.last_status_at, with_random: false)
 
-        # If the feed is full and this account has not posted more recently
-        # than the last item on the feed, then we can skip the whole account
-        # because none of its statuses would stay on the feed anyway
-        next if last_status_score < oldest_home_score
+        # Skip accounts with no recent posts, also checking followees-only posts
+        # because they do not update last_status_at.
+        next if last_status_score < oldest_home_score && !query.unleakable_visibility.exists?(id: oldest_home_score...)
 
         # No need to get older statuses
         query = query.where(id: oldest_home_score...)
@@ -336,10 +343,9 @@ class FeedManager
         oldest_home_score = redis.zrange(timeline_key, 0, 0, with_scores: true).first.last.to_i
         last_status_score = Mastodon::Snowflake.id_at(target_account.last_status_at, with_random: false)
 
-        # If the feed is full and this account has not posted more recently
-        # than the last item on the feed, then we can skip the whole account
-        # because none of its statuses would stay on the feed anyway
-        next if last_status_score < oldest_home_score
+        # Skip accounts with no recent posts, also checking followees-only posts
+        # because they do not update last_status_at.
+        next if last_status_score < oldest_home_score && !query.unleakable_visibility.exists?(id: oldest_home_score...)
 
         # No need to get older statuses
         query = query.where(id: oldest_home_score...)
@@ -447,6 +453,7 @@ class FeedManager
   # @return [void|Symbol] nil, :skip_home, or :filter
   def filter_from_home(status, receiver_id, crutches, timeline_type = :home)
     return            if receiver_id == status.account_id
+    return :filter    if status.unleakable_visibility? && !crutches[:followed_by][status.account_id] && !crutches[:unleakable_mentions][status.id]
     return :filter    if status.reply? && (status.in_reply_to_id.nil? || status.in_reply_to_account_id.nil?)
     return :skip_home if timeline_type != :list && crutches[:exclusive_list_users][status.account_id].present?
     return :filter    if crutches[:languages][status.account_id].present? && status.language.present? && !crutches[:languages][status.account_id].include?(status.language)
@@ -625,6 +632,9 @@ class FeedManager
   def build_crutches(receiver_id, statuses, list: nil)
     crutches = {}
 
+    unleakable_statuses = statuses.select(&:unleakable_visibility?)
+    crutches[:followed_by] = Account.followed_by_map(unleakable_statuses.map(&:account_id), receiver_id)
+    crutches[:unleakable_mentions] = Mention.where(status_id: unleakable_statuses.map(&:id), account_id: receiver_id).pluck(:status_id).index_with(true)
     crutches[:active_mentions] = crutches_active_mentions(statuses)
 
     check_for_blocks = statuses.flat_map do |s|

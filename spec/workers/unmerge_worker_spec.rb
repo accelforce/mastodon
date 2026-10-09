@@ -75,4 +75,62 @@ RSpec.describe UnmergeWorker do
       end
     end
   end
+
+  describe 'removing inaccessible unleakable statuses' do
+    let(:author) { Fabricate(:user).account }
+    let(:recipient) { Fabricate(:user).account }
+    let(:list) { Fabricate(:list, account: recipient) }
+    let(:manager) { FeedManager.instance }
+    let(:options) { { 'only_unleakable' => true } }
+    let(:status) { Fabricate(:status, account: author, visibility: :unleakable) }
+    let(:mentioned) { Fabricate(:status, account: author, visibility: :unleakable) }
+    let(:silent_mentioned) { Fabricate(:status, account: author, visibility: :unleakable) }
+    let(:public_status) { Fabricate(:status, account: author) }
+    let(:private_status) { Fabricate(:status, account: author, visibility: :private) }
+    let(:other_status) { Fabricate(:status, visibility: :unleakable) }
+    let(:statuses) { [status, mentioned, silent_mentioned, public_status, private_status, other_status] }
+
+    before do
+      recipient.follow!(author)
+      author.follow!(recipient)
+      Fabricate(:list_account, list: list, account: author)
+      Fabricate(:mention, status: mentioned, account: recipient)
+      Fabricate(:mention, status: silent_mentioned, account: recipient, silent: true)
+      statuses.each do |post|
+        manager.push_to_home(recipient, post)
+        manager.push_to_list(list, post)
+      end
+      allow(redis).to receive(:publish)
+    end
+
+    it 'queues reverse unmerges when the author unfollows the recipient' do
+      expect { UnfollowService.new.call(author, recipient) }
+        .to enqueue_sidekiq_job(described_class).with(author.id, recipient.id, 'home', options)
+
+      expect(described_class.jobs.pluck('args')).to include([author.id, list.id, 'list', options])
+    end
+
+    it 'removes only inaccessible posts from the recipient feeds without streaming deletions', :inline_jobs do
+      UnfollowService.new.call(author, recipient)
+
+      [:home, :list].each do |type|
+        id = type == :home ? recipient.id : list.id
+        expect(redis.zrange(manager.key(type, id), 0, -1)).to match_array(statuses.excluding(status).map { |post| post.id.to_s })
+      end
+      expect(redis).to_not have_received(:publish)
+    end
+
+    it 'skips unmerging when disabled' do
+      expect { UnfollowService.new.call(author, recipient, skip_unmerge: true) }
+        .to_not enqueue_sidekiq_job(described_class)
+    end
+
+    it 'keeps the usual unmerge behavior without options' do
+      worker.perform(author.id, recipient.id, 'home')
+      worker.perform(author.id, list.id, 'list')
+
+      expect(redis.zrange(manager.key(:home, recipient.id), 0, -1)).to eq([other_status.id.to_s])
+      expect(redis.zrange(manager.key(:list, list.id), 0, -1)).to eq([other_status.id.to_s])
+    end
+  end
 end

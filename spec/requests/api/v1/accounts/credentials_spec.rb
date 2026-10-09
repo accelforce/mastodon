@@ -69,6 +69,18 @@ RSpec.describe 'credentials API' do
 
     it_behaves_like 'forbidden for wrong scope', 'read read:accounts'
 
+    context 'when setting followees-only posting defaults' do
+      let(:params) { { source: { privacy: 'unleakable' } } }
+
+      it 'persists and returns the default visibility' do
+        subject
+
+        expect(response).to have_http_status(200)
+        expect(response.parsed_body.dig('source', 'privacy')).to eq('unleakable')
+        expect(user.reload.setting_default_privacy).to eq('unleakable')
+      end
+    end
+
     describe 'with empty source list' do
       let(:params) { { display_name: "I'm a cat", source: {} } }
 

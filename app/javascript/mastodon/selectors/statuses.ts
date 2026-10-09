@@ -93,6 +93,7 @@ export const selectStatusConditions = createAppSelector(
     const isMine = status?.account === userId;
     const isMineAndPrivate =
       userId === status?.account && status.visibility === 'private';
+    const isMineAndUnleakable = isMine && status.visibility === 'unleakable';
     const quoteApproval = status?.quote_approval?.current_user;
     return {
       isPublic,
@@ -107,9 +108,11 @@ export const selectStatusConditions = createAppSelector(
       isBoosted: status?.reblogged ?? false,
       isBoostingAllowed: isPublic || isMineAndPrivate,
       isQuoteAutomaticallyAccepted:
-        quoteApproval === 'automatic' && (isPublic || isMineAndPrivate),
+        quoteApproval === 'automatic' &&
+        (isPublic || isMineAndPrivate || isMineAndUnleakable),
       isQuoteManuallyAccepted:
-        quoteApproval === 'manual' && (isPublic || isMineAndPrivate),
+        quoteApproval === 'manual' &&
+        (isPublic || isMineAndPrivate || isMineAndUnleakable),
       isQuoteFollowersOnly:
         status?.quote_approval?.automatic[0] === 'followers' ||
         status?.quote_approval?.manual[0] === 'followers',

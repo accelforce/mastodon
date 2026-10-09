@@ -14,7 +14,7 @@ class UserSettings
   setting :show_application, default: true
   setting :default_language, default: nil
   setting :default_sensitive, default: false
-  setting :default_privacy, default: nil, in: %w(public unlisted private)
+  setting :default_privacy, default: nil, in: %w(public unlisted private unleakable)
   setting :default_quote_policy, default: 'public', in: %w(public followers nobody)
   setting :email_subscriptions, default: false
 

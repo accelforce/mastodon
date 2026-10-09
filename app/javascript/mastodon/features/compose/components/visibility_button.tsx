@@ -18,6 +18,7 @@ import AlternateEmailIcon from '@/material-icons/400-24px/alternate_email.svg?re
 import LockIcon from '@/material-icons/400-24px/lock.svg?react';
 import PublicIcon from '@/material-icons/400-24px/public.svg?react';
 import QuietTimeIcon from '@/material-icons/400-24px/quiet_time.svg?react';
+import VisibilityOffIcon from '@/material-icons/400-24px/visibility_off.svg?react';
 
 import type { VisibilityModalCallback } from '../../ui/components/visibility_modal';
 
@@ -65,6 +66,12 @@ const visibilityOptions = {
     value: 'private',
     text: privacyMessages.private_short,
   },
+  unleakable: {
+    icon: 'visibility_off',
+    iconComponent: VisibilityOffIcon,
+    value: 'unleakable',
+    text: privacyMessages.unleakable_short,
+  },
   direct: {
     icon: 'at',
     iconComponent: AlternateEmailIcon,
@@ -91,7 +98,7 @@ const PrivacyModalButton: FC<PrivacyDropdownProps> = ({ disabled = false }) => {
     const visibilityText = intl.formatMessage(
       visibilityOptions[visibility].text,
     );
-    if (visibility === 'private' || visibility === 'direct') {
+    if (['private', 'unleakable', 'direct'].includes(visibility)) {
       return visibilityText;
     }
     if (quotePolicy === 'nobody') {

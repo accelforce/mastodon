@@ -18,6 +18,14 @@ RSpec.describe ActivityPub::QuoteRequestWorker do
         .to have_enqueued_sidekiq_job(match_object_shape, quote.account_id, 'http://example.com', {})
     end
 
+    it 'does not inline or deliver unleakable posts in quote requests' do
+      status.update!(visibility: :unleakable)
+
+      subject.perform(quote.id)
+
+      expect(ActivityPub::DeliveryWorker).to_not have_enqueued_sidekiq_job
+    end
+
     def match_object_shape
       match_json_values(
         type: 'QuoteRequest',

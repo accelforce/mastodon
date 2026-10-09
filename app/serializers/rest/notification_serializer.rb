@@ -27,6 +27,13 @@ class REST::NotificationSerializer < ActiveModel::Serializer
     object.group_key || "ungrouped-#{object.id}"
   end
 
+  def target_status
+    status = object.target_status
+    return if status&.unleakable_visibility? && !StatusPolicy.new(current_user&.account, status).show?
+
+    status
+  end
+
   def status_type?
     [:favourite, :reblog, :status, :mention, :poll, :update, :quoted_update, :quote].include?(object.type)
   end

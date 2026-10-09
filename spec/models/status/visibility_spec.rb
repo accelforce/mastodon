@@ -7,14 +7,14 @@ RSpec.describe Status::Visibility do
     context 'when status is a reblog' do
       subject { Fabricate.build :status, reblog: Fabricate(:status) }
 
-      it { is_expected.to allow_values('public', 'unlisted', 'private').for(:visibility) }
+      it { is_expected.to allow_values('public', 'unlisted', 'private', 'unleakable').for(:visibility) }
       it { is_expected.to_not allow_values('direct', 'limited').for(:visibility) }
     end
 
     context 'when status is not reblog' do
       subject { Fabricate.build :status, reblog_of_id: nil }
 
-      it { is_expected.to allow_values('public', 'unlisted', 'private', 'direct', 'limited').for(:visibility) }
+      it { is_expected.to allow_values('public', 'unlisted', 'private', 'unleakable', 'direct', 'limited').for(:visibility) }
     end
   end
 
@@ -24,6 +24,7 @@ RSpec.describe Status::Visibility do
     let!(:private_status) { Fabricate :status, visibility: :private }
     let!(:public_status) { Fabricate :status, visibility: :public }
     let!(:unlisted_status) { Fabricate :status, visibility: :unlisted }
+    let!(:unleakable_status) { Fabricate :status, visibility: :unleakable }
 
     describe '.list_eligible_visibility' do
       it 'returns appropriate records' do
@@ -35,6 +36,7 @@ RSpec.describe Status::Visibility do
           )
           .and not_include(direct_status)
           .and not_include(limited_status)
+          .and include(unleakable_status)
       end
     end
 
@@ -48,6 +50,7 @@ RSpec.describe Status::Visibility do
           .and not_include(private_status)
           .and not_include(direct_status)
           .and not_include(limited_status)
+          .and not_include(unleakable_status)
       end
     end
 
@@ -110,7 +113,7 @@ RSpec.describe Status::Visibility do
   describe '.selectable_visibilities' do
     it 'returns options available for default privacy selection' do
       expect(Status.selectable_visibilities)
-        .to match(%w(public unlisted private))
+        .to match(%w(public unlisted private unleakable))
     end
   end
 

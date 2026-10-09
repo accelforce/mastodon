@@ -21,6 +21,17 @@ RSpec.describe 'Settings preferences posting defaults page' do
       .to have_title(I18n.t('preferences.posting_defaults'))
   end
 
+  it 'saves and reloads followees-only posting defaults' do
+    visit settings_preferences_posting_defaults_path
+    select I18n.t('statuses.visibilities.unleakable'), from: form_label('defaults.setting_default_privacy'), exact: false
+
+    expect { save_changes }
+      .to change { user.reload.setting_default_privacy }.to('unleakable')
+
+    visit settings_preferences_posting_defaults_path
+    expect(find_field(form_label('defaults.setting_default_privacy')).value).to eq('unleakable')
+  end
+
   def save_changes
     click_on submit_button
   end

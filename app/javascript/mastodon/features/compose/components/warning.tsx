@@ -17,12 +17,17 @@ const selector = createSelector(
     needsLockWarning: privacy === 'private' && !locked,
     hashtagWarning: privacy !== 'public' && HASHTAG_PATTERN_REGEX.test(text),
     directMessageWarning: privacy === 'direct',
+    unleakableWarning: privacy === 'unleakable',
   }),
 );
 
 export const Warning = () => {
-  const { needsLockWarning, hashtagWarning, directMessageWarning } =
-    useAppSelector(selector);
+  const {
+    needsLockWarning,
+    hashtagWarning,
+    directMessageWarning,
+    unleakableWarning,
+  } = useAppSelector(selector);
   if (needsLockWarning) {
     return (
       <WarningMessage>
@@ -39,6 +44,17 @@ export const Warning = () => {
               </a>
             ),
           }}
+        />
+      </WarningMessage>
+    );
+  }
+
+  if (unleakableWarning) {
+    return (
+      <WarningMessage>
+        <FormattedMessage
+          id='compose_form.unleakable_warning'
+          defaultMessage='This post is only visible to people you follow and people mentioned in it. It cannot be boosted and is not sent to other servers.'
         />
       </WarningMessage>
     );

@@ -5,6 +5,8 @@ class ActivityPub::QuoteRequestWorker < ActivityPub::RawDistributionWorker
     @quote = Quote.find(quote_id)
     @account = @quote.account
 
+    return if @quote.status.unleakable_visibility?
+
     distribute!
   rescue ActiveRecord::RecordNotFound
     true

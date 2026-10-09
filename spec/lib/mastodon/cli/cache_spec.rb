@@ -41,6 +41,15 @@ RSpec.describe Mastodon::CLI::Cache do
 
         expect(account_stat.reload.statuses_count).to be_zero
       end
+
+      it 'excludes unleakable and direct posts from recounting' do
+        Fabricate(:status, account: account_stat.account, visibility: :unleakable)
+        Fabricate(:status, account: account_stat.account, visibility: :direct)
+        Fabricate(:status, account: account_stat.account, visibility: :public)
+
+        expect { subject }.to output_results('OK')
+        expect(account_stat.reload.statuses_count).to eq(1)
+      end
     end
 
     context 'with the `statuses` argument' do

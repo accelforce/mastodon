@@ -43,6 +43,14 @@ class UnfollowService < BaseService
       UnmergeWorker.push_bulk(list_ids) do |list_id|
         [@followee.id, list_id, 'list']
       end
+
+      if @followee.local?
+        options = { 'only_unleakable' => true }
+        UnmergeWorker.perform_async(@follower.id, @followee.id, 'home', options)
+        UnmergeWorker.push_bulk(@followee.owned_lists.with_list_account(@follower).pluck(:list_id)) do |list_id|
+          [@follower.id, list_id, 'list', options]
+        end
+      end
     end
 
     follow
