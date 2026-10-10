@@ -20,6 +20,19 @@ RSpec.describe 'Search API' do
           .to start_with('application/json')
       end
 
+      context 'when searching public posts without Elasticsearch' do
+        let(:params) { { q: 'from:me language:ja', type: 'statuses' } }
+        let!(:status) { Fabricate(:status, account: user.account, text: '電車', language: 'ja') }
+
+        it 'returns matching posts with the v4.7 search response shape' do
+          get '/api/v2/search', headers: headers, params: params
+
+          expect(response).to have_http_status(200)
+          expect(response.parsed_body[:statuses].pluck(:id)).to eq [status.id.to_s]
+          expect(response.parsed_body).to include(:accounts, :hashtags, :collections)
+        end
+      end
+
       context 'when searching accounts' do
         let(:params) { { q: 'test', type: 'accounts' } }
 

@@ -23,11 +23,12 @@ class SearchQueryTransformer < Parslet::Transform
     end
 
     def request
-      search = Chewy::Search::Request.new(*indexes).filter(default_filter)
+      search = Status.public_visibility.without_reblogs
+      search = search.where(library_filter) if @flags['in'] == 'library'
 
-      must_clauses.each { |clause| search = search.query.must(clause.to_query) }
-      must_not_clauses.each { |clause| search = search.query.must_not(clause.to_query) }
-      filter_clauses.each { |clause| search = search.filter(**clause.to_query) }
+      must_clauses.each { |clause| search = search.where(clause.to_query) }
+      must_not_clauses.each { |clause| search = search.where(SearchQueryTransformer.negate(clause.to_query)) }
+      filter_clauses.each { |clause| search = search.where(clause.to_query) }
 
       search
     end
@@ -54,47 +55,15 @@ class SearchQueryTransformer < Parslet::Transform
       clauses_by_operator.fetch(:filter, [])
     end
 
-    def indexes
-      case @flags['in']
-      when 'library'
-        [StatusesIndex]
-      when 'public'
-        [PublicStatusesIndex]
-      else
-        [PublicStatusesIndex, StatusesIndex]
-      end
-    end
-
-    def default_filter
-      {
-        bool: {
-          should: [
-            {
-              term: {
-                _index: PublicStatusesIndex.index_name,
-              },
-            },
-            {
-              bool: {
-                must: [
-                  {
-                    term: {
-                      _index: StatusesIndex.index_name,
-                    },
-                  },
-                  {
-                    term: {
-                      searchable_by: @options[:current_account].id,
-                    },
-                  },
-                ],
-              },
-            },
-          ],
-
-          minimum_should_match: 1,
-        },
-      }
+    def library_filter
+      [<<~SQL.squish, { account_id: @options[:current_account].id }]
+        statuses.account_id = :account_id
+        OR EXISTS (SELECT 1 FROM mentions WHERE mentions.status_id = statuses.id AND mentions.account_id = :account_id AND NOT mentions.silent)
+        OR EXISTS (SELECT 1 FROM favourites WHERE favourites.status_id = statuses.id AND favourites.account_id = :account_id)
+        OR EXISTS (SELECT 1 FROM bookmarks WHERE bookmarks.status_id = statuses.id AND bookmarks.account_id = :account_id)
+        OR EXISTS (SELECT 1 FROM statuses reblogs WHERE reblogs.reblog_of_id = statuses.id AND reblogs.account_id = :account_id AND reblogs.deleted_at IS NULL)
+        OR EXISTS (SELECT 1 FROM poll_votes WHERE poll_votes.poll_id = statuses.poll_id AND poll_votes.account_id = :account_id)
+      SQL
     end
   end
 
@@ -123,9 +92,13 @@ class SearchQueryTransformer < Parslet::Transform
 
     def to_query
       if @term.start_with?('#')
-        { match: { tags: { query: @term, operator: 'and' } } }
+        [<<~SQL.squish, Tag.normalize_value_for(:name, @term.delete_prefix('#'))]
+          EXISTS (SELECT 1 FROM statuses_tags INNER JOIN tags ON tags.id = statuses_tags.tag_id
+                  WHERE statuses_tags.status_id = statuses.id AND tags.name = ?)
+        SQL
       else
-        { multi_match: { type: 'most_fields', query: @term, fields: ['text', 'text.stemmed'], operator: 'and' } }
+        terms = @term.split
+        [terms.map { 'statuses.text &@ ?' }.join(' AND '), *terms]
       end
     end
   end
@@ -139,7 +112,7 @@ class SearchQueryTransformer < Parslet::Transform
     end
 
     def to_query
-      { match_phrase: { text: { query: @phrase } } }
+      ['statuses.text &@ ?', @phrase]
     end
   end
 
@@ -157,27 +130,21 @@ class SearchQueryTransformer < Parslet::Transform
       case prefix
       when 'has', 'is'
         @filter = :properties
-        @type = :term
         @term = term
       when 'language'
         @filter = :language
-        @type = :term
         @term = language_code_from_term(term)
       when 'from'
         @filter = :account_id
-        @type = :term
         @term = account_id_from_term(term)
       when 'before'
         @filter = :created_at
-        @type = :range
         @term = { lt: date_from_term(term), time_zone: @options[:current_account]&.user_time_zone.presence || 'UTC' }
       when 'after'
         @filter = :created_at
-        @type = :range
         @term = { gt: date_from_term(term), time_zone: @options[:current_account]&.user_time_zone.presence || 'UTC' }
       when 'during'
         @filter = :created_at
-        @type = :range
         @term = { gte: date_from_term(term), lte: date_from_term(term), time_zone: @options[:current_account]&.user_time_zone.presence || 'UTC' }
       when 'in'
         @operator = :flag
@@ -188,14 +155,75 @@ class SearchQueryTransformer < Parslet::Transform
     end
 
     def to_query
-      if @negated
-        { bool: { must_not: { @type => { @filter => @term } } } }
-      else
-        { @type => { @filter => @term } }
-      end
+      query = case @filter
+              when :properties
+                property_query
+              when :created_at
+                date_query
+              else
+                ["statuses.#{@filter} = ?", @term]
+              end
+
+      @negated ? SearchQueryTransformer.negate(query) : query
     end
 
     private
+
+    def property_query
+      case @term
+      when 'reply', 'sensitive'
+        ["statuses.#{@term} = TRUE"]
+      when 'media', 'image', 'video', 'audio'
+        media_query
+      when 'poll'
+        ['EXISTS (SELECT 1 FROM polls WHERE polls.id = statuses.poll_id)']
+      when 'quote'
+        ['EXISTS (SELECT 1 FROM quotes WHERE quotes.status_id = statuses.id)']
+      when 'link'
+        ['EXISTS (SELECT 1 FROM preview_cards_statuses WHERE preview_cards_statuses.status_id = statuses.id)']
+      when 'embed'
+        [<<~SQL.squish, PreviewCard.types[:video]]
+          EXISTS (SELECT 1 FROM preview_cards_statuses INNER JOIN preview_cards ON preview_cards.id = preview_cards_statuses.preview_card_id
+                  WHERE preview_cards_statuses.status_id = statuses.id AND preview_cards.type = ?)
+        SQL
+      else
+        ['FALSE']
+      end
+    end
+
+    def media_query
+      query = <<~SQL.squish
+        EXISTS (
+          SELECT 1 FROM (
+            SELECT media_attachments.type FROM media_attachments
+            WHERE media_attachments.status_id = statuses.id
+              AND (statuses.ordered_media_attachment_ids IS NULL OR media_attachments.id = ANY(statuses.ordered_media_attachment_ids))
+            ORDER BY array_position(statuses.ordered_media_attachment_ids, media_attachments.id), media_attachments.id
+            LIMIT #{Status::MEDIA_ATTACHMENTS_LIMIT}
+          ) media
+      SQL
+
+      @term == 'media' ? ["#{query})"] : ["#{query} WHERE media.type = ?)", MediaAttachment.types.fetch(@term)]
+    end
+
+    def date_query
+      value = @term.values.first
+      timestamp = if value.match?(EPOCH_RE)
+                    Time.at(Rational(value.to_i, 1000)).utc
+                  else
+                    Time.find_zone!(@term[:time_zone]).iso8601(value)
+                  end
+      date_only = !value.match?(EPOCH_RE) && !Date._iso8601(value).key?(:hour)
+
+      case @prefix
+      when 'before'
+        ['statuses.created_at < ?', timestamp]
+      when 'after'
+        date_only ? ['statuses.created_at >= ?', timestamp.advance(days: 1)] : ['statuses.created_at > ?', timestamp]
+      when 'during'
+        date_only ? ['statuses.created_at >= ? AND statuses.created_at < ?', timestamp, timestamp.advance(days: 1)] : ['statuses.created_at = ?', timestamp]
+      end
+    end
 
     def account_id_from_term(term)
       return @options[:current_account]&.id || -1 if term == 'me'
@@ -231,16 +259,26 @@ class SearchQueryTransformer < Parslet::Transform
     end
   end
 
+  def self.negate(query)
+    ["(#{query.first}) IS NOT TRUE", *query.drop(1)]
+  end
+
   rule(clause: subtree(:clause)) do
     prefix   = clause[:prefix][:term].to_s.downcase if clause[:prefix]
     operator = clause[:operator]&.to_s
-    term     = clause[:phrase] ? clause[:phrase].map { |term| term[:term].to_s }.join(' ') : clause[:term].to_s
+    term     = if clause[:phrase]
+                 clause[:phrase].map { |term| term[:term].to_s }.join(' ')
+               elsif clause[:shortcode]
+                 ":#{clause[:shortcode][:term]}:"
+               else
+                 clause[:term].to_s
+               end
 
     if clause[:prefix] && SUPPORTED_PREFIXES.include?(prefix)
       PrefixClause.new(prefix, operator, term, current_account: current_account)
     elsif clause[:prefix]
       TermClause.new(operator, "#{prefix} #{term}")
-    elsif clause[:term]
+    elsif clause[:term] || clause[:shortcode]
       TermClause.new(operator, term)
     elsif clause[:phrase]
       PhraseClause.new(operator, term)

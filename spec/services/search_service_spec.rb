@@ -58,6 +58,15 @@ RSpec.describe SearchService do
     end
 
     describe 'with a non-url query' do
+      context 'when searching posts without Elasticsearch' do
+        let!(:status) { Fabricate(:status, text: 'searchable body') }
+
+        it 'returns posts only for authenticated accounts and preserves the result shape' do
+          expect(subject.call('searchable', status.account, 10, type: 'statuses')).to eq empty_results.merge(statuses: [status])
+          expect(subject.call('searchable', nil, 10, type: 'statuses')).to eq empty_results
+        end
+      end
+
       context 'when it matches an account' do
         it 'includes the account in the results' do
           query = 'username'
