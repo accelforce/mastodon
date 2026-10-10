@@ -1,9 +1,7 @@
 # frozen_string_literal: true
 
 class StatusesSearchService < BaseService
-  include SearchStoplight
-
-  ES_QUERY_TIMEOUT = ENV.fetch('ES_QUERY_TIMEOUT', '10s')
+  QUERY_TIMEOUT = ENV.fetch('PGROONGA_QUERY_TIMEOUT', '10s')
 
   def call(query, account = nil, options = {})
     MastodonOTELTracer.in_span('StatusesSearchService#call') do |span|
@@ -12,57 +10,55 @@ class StatusesSearchService < BaseService
       @options = options
       @limit   = options[:limit].to_i
       @offset  = options[:offset].to_i
-      convert_deprecated_options!
+      return [] if @limit.zero?
 
       span.add_attributes(
         'search.offset' => @offset,
         'search.limit' => @limit,
-        'search.backend' => Chewy.enabled? ? 'elasticsearch' : 'database'
+        'search.backend' => 'pgroonga'
       )
 
-      status_search_results.tap do |results|
-        span.set_attribute('search.results.count', results.size)
+      Status.transaction(requires_new: true) do
+        Status.connection.execute("SET LOCAL statement_timeout = #{Status.connection.quote(QUERY_TIMEOUT)}")
+
+        status_search_results.tap do |results|
+          span.set_attribute('search.results.count', results.size)
+        end
       end
     end
+  rescue ActiveRecord::QueryCanceled, Parslet::ParseFailed
+    []
   end
 
   private
 
   def status_search_results
-    request             = parsed_query.request
-    results             = elastic_stoplight_wrapper.run { request.timeout(ES_QUERY_TIMEOUT).collapse(field: :id).order(id: { order: :desc }).limit(@limit).offset(@offset).objects.compact }
-    account_ids         = results.map(&:account_id)
-    account_domains     = results.map(&:account_domain)
+    request = parsed_query.request.reorder(nil).includes(:account)
+    request = request.where(account_id: @options[:account_id]) if @options[:account_id].present?
+    request = request.where('statuses.id > ?', @options[:min_id].to_i) if @options[:min_id].present?
+    request = request.where(statuses: { id: ...@options[:max_id].to_i }) if @options[:max_id].present?
+    results = []
+    offset  = @offset
 
-    @account.preload_relations!(account_ids, account_domains)
+    request.find_in_batches(batch_size: [@limit, 100].max, order: :desc) do |batch|
+      @account.preload_relations!(batch.map(&:account_id), batch.map(&:account_domain))
 
-    results.reject { |status| StatusFilter.new(status, @account).filtered? }
-  rescue Stoplight::Error::RedLight, Faraday::ConnectionFailed, Parslet::ParseFailed, Errno::ENETUNREACH, OpenSSL::SSL::SSLError, Elastic::Transport::Transport::Error
-    []
+      batch.each do |status|
+        next if StatusFilter.new(status, @account).filtered?
+
+        if offset.positive?
+          offset -= 1
+        else
+          results << status
+          return results if results.size == @limit
+        end
+      end
+    end
+
+    results
   end
 
   def parsed_query
     SearchQueryTransformer.new.apply(SearchQueryParser.new.parse(@query), current_account: @account)
-  end
-
-  def convert_deprecated_options!
-    syntax_options = []
-
-    if @options[:account_id]
-      username = Account.select(:username, :domain).find(@options[:account_id]).acct
-      syntax_options << "from:@#{username}"
-    end
-
-    if @options[:min_id]
-      timestamp = Mastodon::Snowflake.to_time(@options[:min_id].to_i)
-      syntax_options << "after:\"#{timestamp.iso8601}\""
-    end
-
-    if @options[:max_id]
-      timestamp = Mastodon::Snowflake.to_time(@options[:max_id].to_i)
-      syntax_options << "before:\"#{timestamp.iso8601}\""
-    end
-
-    @query = "#{@query} #{syntax_options.join(' ')}".strip if syntax_options.any?
   end
 end

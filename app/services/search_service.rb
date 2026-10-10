@@ -84,7 +84,7 @@ class SearchService < BaseService
   end
 
   def status_searchable?
-    Chewy.enabled? && status_search? && @account.present?
+    status_search? && @account.present?
   end
 
   def account_searchable?
