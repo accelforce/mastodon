@@ -168,6 +168,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_08_12_154114) do
     t.string "avatar_remote_url"
     t.integer "avatar_storage_schema_version"
     t.datetime "avatar_updated_at", precision: nil
+    t.boolean "cat", default: false, null: false
     t.string "collections_url"
     t.datetime "created_at", precision: nil, null: false
     t.boolean "discoverable"

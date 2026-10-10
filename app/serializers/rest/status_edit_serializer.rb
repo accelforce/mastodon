@@ -15,7 +15,7 @@ class REST::StatusEditSerializer < ActiveModel::Serializer
   attribute :poll, if: -> { object.poll_options.present? }
 
   def content
-    status_content_format(object)
+    status_content_format(object, cat_speech: object.cat?)
   end
 
   def poll

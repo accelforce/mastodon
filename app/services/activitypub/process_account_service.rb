@@ -270,6 +270,8 @@ class ActivityPub::ProcessAccountService < BaseService
   end
 
   def set_fetchable_attributes!
+    @account.cat = @json['isCat'] || false
+
     begin
       avatar_url, avatar_description = image_url_and_description('icon')
       @account.avatar_remote_url = avatar_url || '' unless skip_download?

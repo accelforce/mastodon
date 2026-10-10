@@ -182,6 +182,10 @@ export const AccountEdit: FC = () => {
     void dispatch(patchProfile({ bot: !profile?.bot }));
   }, [dispatch, profile?.bot]);
 
+  const handleCatToggle = useCallback(() => {
+    void dispatch(patchProfile({ cat: !profile?.cat }));
+  }, [dispatch, profile?.cat]);
+
   // Normally we would use the account emoji, but we want all custom emojis to be available to render after editing.
   const emojis = useCustomEmojis();
   const htmlHandlers = useElementHandledLink({
@@ -349,6 +353,23 @@ export const AccountEdit: FC = () => {
         />
 
         <AccountEditSection title={messages.advancedSettingsTitle}>
+          <ToggleField
+            checked={profile.cat}
+            onChange={handleCatToggle}
+            disabled={isPending}
+            label={
+              <FormattedMessage
+                id='account_edit.advanced_settings.cat_label'
+                defaultMessage='I am a cat'
+              />
+            }
+            hint={
+              <FormattedMessage
+                id='account_edit.advanced_settings.cat_hint'
+                defaultMessage='Display your posts in cat speech'
+              />
+            }
+          />
           <ToggleField
             checked={profile.bot}
             onChange={handleBotToggle}

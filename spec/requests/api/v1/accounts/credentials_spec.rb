@@ -25,6 +25,7 @@ RSpec.describe 'credentials API' do
           indexable: false,
         }),
         locked: true,
+        cat: false,
       })
     end
 
@@ -68,6 +69,46 @@ RSpec.describe 'credentials API' do
     end
 
     it_behaves_like 'forbidden for wrong scope', 'read read:accounts'
+
+    context 'when enabling Cat status' do
+      let(:params) { { cat: true } }
+
+      it 'persists and returns Cat status and queues federation' do
+        subject
+
+        expect(response).to have_http_status(200)
+        expect(response.parsed_body).to include('cat' => true)
+        expect(user.account.reload).to be_cat
+        expect(ActivityPub::UpdateDistributionWorker).to have_enqueued_sidekiq_job(user.account_id)
+      end
+    end
+
+    context 'when disabling Cat status' do
+      let(:params) { { cat: false } }
+
+      before { user.account.update!(cat: true) }
+
+      it 'persists and returns false' do
+        subject
+
+        expect(response).to have_http_status(200)
+        expect(response.parsed_body).to include('cat' => false)
+        expect(user.account.reload).to_not be_cat
+      end
+    end
+
+    context 'when Cat status is omitted' do
+      let(:params) { { display_name: 'Cat' } }
+
+      before { user.account.update!(cat: true) }
+
+      it 'preserves Cat status' do
+        subject
+
+        expect(response.parsed_body).to include('cat' => true)
+        expect(user.account.reload).to be_cat
+      end
+    end
 
     describe 'with empty source list' do
       let(:params) { { display_name: "I'm a cat", source: {} } }

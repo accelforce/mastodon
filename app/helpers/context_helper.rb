@@ -11,6 +11,7 @@ module ContextHelper
   CONTEXT_EXTENSION_MAP = {
     manually_approves_followers: { 'manuallyApprovesFollowers' => 'as:manuallyApprovesFollowers' },
     sensitive: { 'sensitive' => 'as:sensitive' },
+    is_cat: { 'isCat' => 'as:isCat' },
     hashtag: { 'Hashtag' => 'as:Hashtag' },
     moved_to: { 'movedTo' => { '@id' => 'as:movedTo', '@type' => '@id' } },
     also_known_as: { 'alsoKnownAs' => { '@id' => 'as:alsoKnownAs', '@type' => '@id' } },

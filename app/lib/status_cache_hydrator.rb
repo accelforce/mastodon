@@ -1,6 +1,8 @@
 # frozen_string_literal: true
 
 class StatusCacheHydrator
+  include FormattingHelper
+
   def initialize(status)
     @status = status
   end
@@ -82,7 +84,10 @@ class StatusCacheHydrator
     # Nested statuses are more likely to have a stale cache
     fill_status_stats(payload, status) if nested
 
-    hydrate_account(payload[:account], account)
+    # The author's Cat setting can change after the payload was cached.
+    cached_cat = payload[:account][:cat]
+    author = hydrate_account(payload[:account], account)
+    payload[:content] = status_content_format(status, cat_speech: author.cat?) if status.local? && author && cached_cat != author.cat?
   end
 
   def fill_status_stats(payload, status)
@@ -127,6 +132,9 @@ class StatusCacheHydrator
     return if stale_account.nil?
 
     payload[:feature_approval][:current_user] = stale_account.feature_policy_for_account(account)
+    payload[:cat] = stale_account.cat?
+
+    stale_account
   end
 
   def mapped_applied_custom_filter(account, status)

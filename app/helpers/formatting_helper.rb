@@ -26,10 +26,10 @@ module FormattingHelper
   end
   module_function :extract_status_plain_text
 
-  def status_content_format(status)
+  def status_content_format(status, cat_speech: false)
     quoted_status = status.quote&.quoted_status if status.local?
 
-    html_aware_format(status.text, status.local?, preloaded_accounts: [status.account] + (status.respond_to?(:active_mentions) ? status.active_mentions.map(&:account) : []), quoted_status: quoted_status)
+    html_aware_format(status.text, status.local?, preloaded_accounts: [status.account] + (status.respond_to?(:active_mentions) ? status.active_mentions.map(&:account) : []), quoted_status: quoted_status, cat_speech: cat_speech)
   end
 
   def rss_status_content_format(status)
@@ -61,7 +61,7 @@ module FormattingHelper
   def wrapped_status_content_format(status)
     safe_join [
       rss_content_preroll(status),
-      status_content_format(status),
+      status_content_format(status, cat_speech: status.cat?),
       rss_content_postroll(status),
     ]
   end

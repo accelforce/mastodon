@@ -14,6 +14,15 @@ RSpec.describe ActivityPub::NoteSerializer do
   let!(:reply_by_account_third) { Fabricate(:status, account: account, thread: parent, visibility: :public) }
   let!(:reply_by_account_visibility_direct) { Fabricate(:status, account: account, thread: parent, visibility: :direct) }
 
+  context 'with a Cat author' do
+    let(:account) { Fabricate(:account, cat: true) }
+    let(:parent) { Fabricate(:status, account: account, text: 'な 나', language: 'ja') }
+
+    it 'sends authored content in both content and contentMap' do
+      expect(subject).to include('content' => '<p>な 나</p>', 'contentMap' => { 'ja' => '<p>な 나</p>' })
+    end
+  end
+
   it 'has the expected shape and replies collection' do
     expect(subject).to include({
       '@context' => include('https://www.w3.org/ns/activitystreams'),

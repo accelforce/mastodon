@@ -15,6 +15,7 @@
 #  avatar_remote_url             :string
 #  avatar_storage_schema_version :integer
 #  avatar_updated_at             :datetime
+#  cat                           :boolean          default(FALSE), not null
 #  collections_url               :string
 #  discoverable                  :boolean
 #  display_name                  :string           default(""), not null

@@ -119,6 +119,14 @@ RSpec.describe TranslateStatusService do
       service.instance_variable_set(:@status, status)
     end
 
+    context 'with a Cat author' do
+      let(:status) { Fabricate(:status, account: Fabricate(:account, cat: true), text: 'な 나') }
+
+      it 'translates authored text' do
+        expect(service.send(:source_texts)).to eq(content: '<p>な 나</p>')
+      end
+    end
+
     describe 'status only has content' do
       it 'returns formatted content' do
         expect(service.send(:source_texts)).to eq({ content: '<p>Hello</p>' })

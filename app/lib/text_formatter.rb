@@ -20,6 +20,7 @@ class TextFormatter
   # @option options [Boolean] :multiline
   # @option options [Boolean] :with_domains
   # @option options [Boolean] :with_rel_me
+  # @option options [Boolean] :cat_speech
   # @option options [Array<Account>] :preloaded_accounts
   def initialize(text, options = {})
     @text    = text
@@ -98,14 +99,29 @@ class TextFormatter
 
     last_index = entities.reduce(0) do |index, entity|
       indices = entity[:indices]
-      result << h(text[index...indices.first])
+      result << format_text(text[index...indices.first])
       result << yield(entity)
       indices.last
     end
 
-    result << h(text[last_index..])
+    result << format_text(text[last_index..])
 
     result
+  end
+
+  def format_text(value)
+    if options[:cat_speech]
+      value = value.gsub(/[なナﾅ나-낳]/) do |character|
+        case character
+        when 'な' then 'にゃ'
+        when 'ナ' then 'ニャ'
+        when 'ﾅ' then 'ﾆｬ'
+        else (character.ord + ('냐'.ord - '나'.ord)).chr(Encoding::UTF_8)
+        end
+      end
+    end
+
+    h(value)
   end
 
   def link_to_url(entity)

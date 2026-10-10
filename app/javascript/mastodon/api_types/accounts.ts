@@ -39,6 +39,7 @@ export interface BaseApiAccountJSON {
   avatar_static: string;
   avatar_description: string;
   bot: boolean;
+  cat: boolean;
   created_at: string;
   discoverable?: boolean;
   indexable: boolean;

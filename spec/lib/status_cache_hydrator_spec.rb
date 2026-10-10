@@ -9,6 +9,78 @@ RSpec.describe StatusCacheHydrator do
   describe '#hydrate' do
     let(:compare_to_hash) { InlineRenderer.render(status, account, :status) }
 
+    context 'when Cat status changes after the cache is populated' do
+      let(:author) { Fabricate(:account) }
+      let(:status) { Fabricate(:status, account: author, text: 'な 나') }
+      let(:cached_statuses) { [status] }
+
+      before do
+        cached_statuses.each do |cached_status|
+          Rails.cache.write("fan-out/#{cached_status.id}", InlineRenderer.render(cached_status, nil, :status))
+        end
+        author.update!(cat: true)
+      end
+
+      it 'refreshes the account flag and body using the current setting' do
+        payload = described_class.new(status).hydrate(account)
+
+        expect(payload).to include(content: '<p>にゃ 냐</p>', account: a_hash_including(cat: true))
+      end
+
+      context 'when Cat status is disabled' do
+        let(:author) { Fabricate(:account, cat: true) }
+
+        before { author.update!(cat: false) }
+
+        it 'restores the original body' do
+          payload = described_class.new(status).hydrate(account)
+
+          expect(payload).to include(content: '<p>な 나</p>', account: a_hash_including(cat: false))
+        end
+      end
+
+      context 'when the cache predates the Cat field' do
+        before do
+          payload = Rails.cache.read("fan-out/#{status.id}")
+          payload[:account].delete(:cat)
+          Rails.cache.write("fan-out/#{status.id}", payload)
+        end
+
+        it 'refreshes content and adds the flag' do
+          payload = described_class.new(status).hydrate(account)
+
+          expect(payload).to include(content: '<p>にゃ 냐</p>', account: a_hash_including(cat: true))
+        end
+      end
+
+      context 'with a reblog' do
+        let(:original) { Fabricate(:status, account: author, text: 'な 나') }
+        let(:status) { Fabricate(:status, reblog: original) }
+
+        it 'refreshes the original post inside the reblog' do
+          payload = described_class.new(status).hydrate(account)
+
+          expect(payload[:reblog]).to include(content: '<p>にゃ 냐</p>', account: a_hash_including(cat: true))
+        end
+      end
+
+      context 'with a quoted post' do
+        let(:status) do
+          Fabricate(:status).tap do |post|
+            Fabricate(:quote, status: post, quoted_status: quoted_status, state: :accepted)
+          end
+        end
+        let(:quoted_status) { Fabricate(:status, account: author, text: 'な 나') }
+        let(:cached_statuses) { [status, quoted_status] }
+
+        it 'refreshes the quoted post' do
+          payload = described_class.new(status).hydrate(account)
+
+          expect(payload[:quote][:quoted_status]).to include(content: '<p>にゃ 냐</p>', account: a_hash_including(cat: true))
+        end
+      end
+    end
+
     shared_examples 'shared behavior' do
       context 'when handling a new status' do
         let(:poll) { Fabricate(:poll) }

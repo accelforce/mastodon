@@ -85,7 +85,7 @@ class REST::StatusSerializer < ActiveModel::Serializer
   end
 
   def content
-    status_content_format(object)
+    status_content_format(object, cat_speech: object.cat?)
   end
 
   def url

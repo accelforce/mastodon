@@ -59,6 +59,7 @@ export const accountFactoryAPI: FactoryFunction<ApiAccountJSON> = ({
   username: 'testuser',
   display_name: 'Test User',
   bot: false,
+  cat: false,
   created_at: '2023-01-01T00:00:00.000Z',
   discoverable: true,
   emojis: [],

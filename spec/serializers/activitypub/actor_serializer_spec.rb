@@ -5,6 +5,23 @@ require 'rails_helper'
 RSpec.describe ActivityPub::ActorSerializer do
   subject { serialized_record_json(record, described_class, adapter: ActivityPub::Adapter) }
 
+  describe '#isCat' do
+    let(:record) { Fabricate(:account, cat: true) }
+
+    it 'publishes Cat status with its JSON-LD meaning' do
+      expect(subject).to include('isCat' => true)
+      expect(subject.fetch('@context').grep(Hash)).to include(a_hash_including('isCat' => 'as:isCat'))
+    end
+
+    context 'with an ordinary account' do
+      let(:record) { Fabricate(:account) }
+
+      it 'publishes false' do
+        expect(subject).to include('isCat' => false)
+      end
+    end
+  end
+
   describe '#type' do
     context 'with the instance actor' do
       let(:record) { Account.find(Account::INSTANCE_ACTOR_ID) }
