@@ -7,6 +7,19 @@ RSpec.describe ProcessMentionsService do
 
   let(:account) { Fabricate(:account, username: 'alice') }
 
+  context 'with avatar emoji references and an ordinary mention followed by a colon' do
+    let!(:avatar_account) { Fabricate(:account) }
+    let!(:mentioned_account) { Fabricate(:account) }
+    let(:status) { Fabricate(:status, account: account, text: ":@#{avatar_account.acct}: :@unknown@remote.example: @#{mentioned_account.acct}:") }
+
+    it 'creates only the ordinary mention and leaves avatar references unlinked' do
+      subject.call(status)
+
+      expect(status.mentions.map(&:account)).to contain_exactly(mentioned_account)
+      expect(TextFormatter.new(status.text, preloaded_accounts: status.mentions.map(&:account)).to_s).to include(":@#{avatar_account.acct}:", ':@unknown@remote.example:')
+    end
+  end
+
   context 'when mentions contain blocked accounts' do
     let!(:non_blocked_account)          { Fabricate(:account) }
     let!(:individually_blocked_account) { Fabricate(:account) }

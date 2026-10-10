@@ -248,6 +248,26 @@ class ActivityPub::NoteSerializer < ActivityPub::Serializer
     }
   end
 
+  class AvatarEmojiSerializer < ActivityPub::Serializer
+    context_extensions :emoji
+
+    attributes :type, :name
+
+    has_one :icon, serializer: ActivityPub::ImageSerializer
+
+    def type
+      'Emoji'
+    end
+
+    def name
+      ":#{object.shortcode}:"
+    end
+
+    def icon
+      object.image
+    end
+  end
+
   class PreviewCardSerializer < ActivityPub::Serializer
     attributes :type, :href
 

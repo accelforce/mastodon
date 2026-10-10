@@ -14,6 +14,25 @@ RSpec.describe ActivityPub::NoteSerializer do
   let!(:reply_by_account_third) { Fabricate(:status, account: account, thread: parent, visibility: :public) }
   let!(:reply_by_account_visibility_direct) { Fabricate(:status, account: account, thread: parent, visibility: :direct) }
 
+  context 'with an avatar emoji and no registered custom emoji' do
+    let(:parent) { Fabricate(:status, account: account, text: ":@#{other.acct}:", language: 'en') }
+
+    it 'sends an Emoji tag with its image and JSON-LD context while preserving authored text' do
+      expect(subject).to include(
+        'content' => "<p>:@#{other.acct}:</p>",
+        'contentMap' => { 'en' => "<p>:@#{other.acct}:</p>" },
+        'tag' => contain_exactly(
+          a_hash_including(
+            'type' => 'Emoji',
+            'name' => ":@#{other.acct}:",
+            'icon' => include('type' => 'Image', 'url' => end_with(other.avatar_original_url))
+          )
+        )
+      )
+      expect(subject['@context'].grep(Hash)).to include(a_hash_including('Emoji' => 'toot:Emoji'))
+    end
+  end
+
   context 'with a Cat author' do
     let(:account) { Fabricate(:account, cat: true) }
     let(:parent) { Fabricate(:status, account: account, text: 'な 나', language: 'ja') }

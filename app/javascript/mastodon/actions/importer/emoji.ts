@@ -5,6 +5,9 @@ import { emojiLogger } from '@/mastodon/features/emoji/utils';
 const log = emojiLogger('actions');
 
 export async function importCustomEmoji(emojis: ApiCustomEmojiJSON[]) {
+  // Avatar emojis are supplied by posts, rather than the custom emoji endpoint.
+  emojis = emojis.filter((emoji) => !emoji.shortcode.startsWith('@'));
+
   if (emojis.length === 0) {
     return;
   }

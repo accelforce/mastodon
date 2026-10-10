@@ -61,6 +61,12 @@ RSpec.describe StatusLengthValidator do
     it { is_expected.to allow_value(text).for(:text) }
   end
 
+  context 'when a remote avatar reference causes limit excess' do
+    let(:text) { ('a' * 75) + " :@alice@#{'b' * 30}.com:" }
+
+    it { is_expected.to_not allow_value(text).for(:text).with_message(too_long_message) }
+  end
+
   context 'when remote usernames are attached to long domains' do
     let(:text) { "@alice@#{'b' * Extractor::MAX_DOMAIN_LENGTH * 2}.com" }
 

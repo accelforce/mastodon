@@ -92,7 +92,7 @@ RSpec.describe StatusesSearchService do
     end
 
     it 'applies author and exclusive ID boundaries without converting IDs to timestamps' do
-      statuses = (100..102).map { |id| Fabricate(:status, id: id, account: author, text: 'boundary', created_at: Time.utc(2026, 10, 11)) }
+      statuses = (100..102).map { |id| Fabricate(:status, id: id, account: author, text: 'boundary', created_at: Time.utc(2026, 10, 11), override_timestamps: true) }
       Fabricate(:status, id: 103, account: viewer, text: 'boundary')
 
       expect(search('boundary', account_id: author.id, min_id: 100, max_id: 102)).to eq [statuses[1]]

@@ -14,6 +14,16 @@ RSpec.describe EmojiFormatter do
 
     let(:emojis) { [emoji] }
 
+    context 'with adjacent avatar emojis' do
+      let(:account) { Fabricate(:account, username: 'alice') }
+      let(:emojis) { [AvatarEmoji.new(account: account, shortcode: '@alice')] }
+      let(:text) { preformat_text('A:@alice::@alice:B') }
+
+      it 'renders both avatar references within text' do
+        expect(Nokogiri::HTML5.fragment(subject).css('img').pluck('alt')).to eq([':@alice:', ':@alice:'])
+      end
+    end
+
     context 'when given text that is not marked as html-safe' do
       let(:text) { 'Foo' }
 

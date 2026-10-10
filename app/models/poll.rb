@@ -67,7 +67,7 @@ class Poll < ApplicationRecord
   delegate :local?, :remote?, to: :account
 
   def emojis
-    @emojis ||= CustomEmoji.from_text(options.join(' '), account.domain)
+    @emojis ||= CustomEmoji.from_text(options.join(' '), account.domain) + AvatarEmoji.from_text(options.join(' '), account.domain)
   end
 
   class Option < ActiveModelSerializers::Model

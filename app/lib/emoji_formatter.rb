@@ -8,7 +8,7 @@ class EmojiFormatter
   attr_reader :html, :custom_emojis, :options
 
   # @param [ActiveSupport::SafeBuffer] html
-  # @param [Array<CustomEmoji>] custom_emojis
+  # @param [Array<CustomEmoji, AvatarEmoji>] custom_emojis
   # @param [Hash] options
   # @option options [Boolean] :animate
   # @option options [String] :style
@@ -49,13 +49,13 @@ class EmojiFormatter
           shortcode = text[(shortname_start_index + 1)..(i - 1)]
           char_after = text[i + 1]
 
-          next unless (char_after.nil? || !DISALLOWED_BOUNDING_REGEX.match?(char_after)) && (emoji = emoji_map[shortcode])
+          next unless (shortcode.start_with?('@') || char_after.nil? || !DISALLOWED_BOUNDING_REGEX.match?(char_after)) && (emoji = emoji_map[shortcode])
 
           result << tree.document.create_text_node(text[last_index..(shortname_start_index - 1)]) if shortname_start_index.positive?
           result << tree.document.fragment(tag_for_emoji(shortcode, emoji))
 
           last_index = i + 1
-        elsif text[i] == ':' && (i.zero? || !DISALLOWED_BOUNDING_REGEX.match?(text[i - 1]))
+        elsif text[i] == ':' && (text[i + 1] == '@' || i.zero? || !DISALLOWED_BOUNDING_REGEX.match?(text[i - 1]))
           inside_shortname = true
           shortname_start_index = i
         end

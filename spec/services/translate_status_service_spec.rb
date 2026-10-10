@@ -119,6 +119,23 @@ RSpec.describe TranslateStatusService do
       service.instance_variable_set(:@status, status)
     end
 
+    context 'with avatar emojis in the body, CW, and poll' do
+      let(:text) { 'Hello :@alice::@alice:' }
+      let(:spoiler_text) { ':@alice:' }
+      let(:poll) { Fabricate(:poll, options: [':@alice:', 'Other']) }
+
+      before { Fabricate(:account, username: 'alice') }
+
+      it 'protects each avatar shortcode from translation' do
+        expect(service.send(:source_texts).values).to contain_exactly(
+          '<p>Hello <span translate="no">:@alice:</span><span translate="no">:@alice:</span></p>',
+          '<span translate="no">:@alice:</span>',
+          '<span translate="no">:@alice:</span>',
+          'Other'
+        )
+      end
+    end
+
     context 'with a Cat author' do
       let(:status) { Fabricate(:status, account: Fabricate(:account, cat: true), text: 'な 나') }
 

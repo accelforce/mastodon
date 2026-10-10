@@ -20,6 +20,24 @@ RSpec.describe REST::StatusSerializer do
   let(:status) { Fabricate(:status, account: alice) }
 
   context 'with a local status' do
+    context 'with custom and avatar emojis across the body, CW, and poll' do
+      let(:poll) { Fabricate(:poll, account: alice, options: [':@carol:', 'Other']) }
+      let(:status) { Fabricate(:status, account: alice, text: ':wave: :@alice:', spoiler_text: ':@bob@other.com:', preloadable_poll: poll) }
+
+      before do
+        Fabricate(:custom_emoji, shortcode: 'wave')
+        Fabricate(:account, username: 'carol')
+        bob
+      end
+
+      it 'supplies resolved emojis without rewriting post source or populating the picker' do
+        expect(subject['emojis'].pluck('shortcode')).to contain_exactly('wave', '@alice', '@bob@other.com', '@carol')
+        expect(subject['emojis'].reject { |item| item['shortcode'] == 'wave' }).to all(include('visible_in_picker' => false))
+        expect(subject['content']).to eq('<p>:wave: :@alice:</p>')
+        expect(status.reload.text).to eq(':wave: :@alice:')
+      end
+    end
+
     context 'with a Cat author' do
       let(:alice) { Fabricate(:account, username: 'alice', cat: true) }
       let(:status) { Fabricate(:status, account: alice, text: 'な 나', spoiler_text: 'な', language: 'en') }

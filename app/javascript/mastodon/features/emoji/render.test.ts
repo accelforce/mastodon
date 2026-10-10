@@ -43,6 +43,15 @@ describe('tokenizeText', () => {
     ]);
   });
 
+  test('recognizes adjacent local and remote avatar emojis', () => {
+    expect(tokenizeText('Hi :@alice::@bob@remote.example:!')).toEqual([
+      'Hi ',
+      { type: 'custom', code: ':@alice:' },
+      { type: 'custom', code: ':@bob@remote.example:' },
+      '!',
+    ]);
+  });
+
   test('handles custom emoji with underscores and numbers', () => {
     expect(tokenizeText('Hello :smile_123:!!')).toEqual([
       'Hello ',
@@ -87,6 +96,16 @@ describe('stringToEmojiState', () => {
 
   test('returns null for custom emoji without data', () => {
     expect(stringToEmojiState(':smile:')).toBeNull();
+  });
+
+  test('uses avatar data supplied by the post and leaves unresolved references as text', () => {
+    const avatar = customEmojiFactory({ shortcode: '@alice@remote.example' });
+    expect(
+      stringToEmojiState(':@alice@remote.example:', {
+        '@alice@remote.example': avatar,
+      }),
+    ).toEqual({ type: 'custom', code: '@alice@remote.example', data: avatar });
+    expect(stringToEmojiState(':@unknown:')).toBeNull();
   });
 
   test('returns custom emoji state with data when provided', () => {

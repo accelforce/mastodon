@@ -13,6 +13,18 @@ RSpec.describe REST::StatusEditSerializer do
 
   let(:status_edit) { Fabricate(:status_edit) }
 
+  context 'with avatar emojis in an edit by a different account' do
+    let(:author) { Fabricate(:account, domain: 'remote.example') }
+    let!(:avatar_account) { Fabricate(:account, username: 'alice', domain: author.domain) }
+    let(:status) { Fabricate(:status, account: author) }
+    let(:status_edit) { Fabricate(:status_edit, status: status, account: Fabricate(:account), text: '<p>:@alice:</p>', spoiler_text: ':@alice:', poll_options: [':@alice:', 'Other']) }
+
+    it 'uses the original author domain for historical emojis' do
+      expect(subject['emojis']).to contain_exactly(include('shortcode' => '@alice', 'visible_in_picker' => false))
+      expect(status_edit.emojis.first.account).to eq(avatar_account)
+    end
+  end
+
   context 'with a Cat author and a different editor' do
     let(:author) { Fabricate(:account, cat: true) }
     let(:status) { Fabricate(:status, account: author) }

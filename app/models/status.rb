@@ -282,7 +282,8 @@ class Status < ApplicationRecord
     fields  = [spoiler_text, text]
     fields += preloadable_poll.options unless preloadable_poll.nil?
 
-    @emojis = CustomEmoji.from_text(fields.join(' '), account.domain)
+    emoji_text = fields.join(' ')
+    @emojis = CustomEmoji.from_text(emoji_text, account.domain) + AvatarEmoji.from_text(emoji_text, account.domain)
   end
 
   def ordered_media_attachments

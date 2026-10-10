@@ -29,6 +29,16 @@ RSpec.describe FormattingHelper do
   describe '#rss_status_content_format' do
     subject { helper.rss_status_content_format(status) }
 
+    context 'with avatar emojis in the body, CW, and poll' do
+      let(:status) { Fabricate(:status, text: ':@alice:', spoiler_text: ':@alice:', poll: Fabricate.build(:poll, options: [':@alice:', 'Other'])) }
+
+      before { Fabricate(:account, username: 'alice') }
+
+      it 'renders avatars throughout the syndicated post' do
+        expect(parsed_result.css('img').pluck('alt')).to eq([':@alice:', ':@alice:', ':@alice:'])
+      end
+    end
+
     context 'with a Cat author' do
       let(:status) { Fabricate(:status, account: Fabricate(:account, cat: true), text: 'な', spoiler_text: 'な', poll: Fabricate.build(:poll, options: ['な', '나'])) }
 

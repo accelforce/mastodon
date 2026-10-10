@@ -27,6 +27,6 @@ class REST::CustomEmojiSerializer < ActiveModel::Serializer
   end
 
   def category_loaded?
-    object.association(:category).loaded? && object.category.present?
+    object.is_a?(CustomEmoji) && object.association(:category).loaded? && object.category.present?
   end
 end
