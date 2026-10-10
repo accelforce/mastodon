@@ -150,6 +150,8 @@
   "account.unmute_short": "ミュート解除",
   "account_edit.advanced_settings.bot_hint": "このアカウントは主に自動的に動作していて監視されていない可能性があることを、他の人に示します",
   "account_edit.advanced_settings.bot_label": "自動アカウント",
+  "account_edit.advanced_settings.cat_hint": "投稿の本文を猫の言葉で表示します",
+  "account_edit.advanced_settings.cat_label": "私は猫です",
   "account_edit.advanced_settings.title": "詳細設定",
   "account_edit.bio.add_label": "自己紹介を追加",
   "account_edit.bio.edit_label": "自己紹介を編集",

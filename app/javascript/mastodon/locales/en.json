@@ -154,6 +154,8 @@
   "account.unmute_short": "Unmute",
   "account_edit.advanced_settings.bot_hint": "Signal to others that the account mainly performs automated actions and might not be monitored",
   "account_edit.advanced_settings.bot_label": "Automated account",
+  "account_edit.advanced_settings.cat_hint": "Display your posts in cat speech",
+  "account_edit.advanced_settings.cat_label": "I am a cat",
   "account_edit.advanced_settings.title": "Advanced settings",
   "account_edit.bio.add_label": "Add bio",
   "account_edit.bio.edit_label": "Edit bio",

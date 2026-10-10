@@ -19,6 +19,58 @@ RSpec.describe ActivityPub::ProcessAccountService do
     stub_request(:get, "#{Addressable::URI.parse(payload['id']).origin}/.well-known/webfinger?resource=#{webfinger['subject']}").to_return(body: webfinger.to_json, headers: { 'Content-Type': 'application/jrd+json' })
   end
 
+  context 'with Cat status' do
+    let(:payload) do
+      {
+        'id' => 'https://foo.test/actor',
+        'type' => 'Person',
+        'inbox' => 'https://foo.test/inbox',
+        'preferredUsername' => 'alice',
+        'isCat' => true,
+      }
+    end
+
+    let(:initial_cat) { false }
+    let!(:account) { Fabricate(:account, username: 'alice', domain: 'foo.test', uri: payload['id'], cat: initial_cat) }
+
+    before { stub_webfinger! }
+
+    it 'stores true' do
+      expect(subject.call(payload)).to be_cat
+      expect(account.reload).to be_cat
+    end
+
+    context 'with false' do
+      let(:initial_cat) { true }
+
+      before { payload['isCat'] = false }
+
+      it 'clears Cat status' do
+        expect(subject.call(payload)).to_not be_cat
+        expect(account.reload).to_not be_cat
+      end
+    end
+
+    context 'without isCat' do
+      let(:initial_cat) { true }
+
+      before { payload.delete('isCat') }
+
+      it 'clears Cat status' do
+        expect(subject.call(payload)).to_not be_cat
+        expect(account.reload).to_not be_cat
+      end
+
+      context 'when only fetching keys' do
+        it 'preserves the existing profile setting' do
+          subject.call(payload, only_key: true)
+
+          expect(account.reload).to be_cat
+        end
+      end
+    end
+  end
+
   context 'with property values, an avatar, and a profile header' do
     let(:payload) do
       {

@@ -8,7 +8,7 @@ class ActivityPub::ActorSerializer < ActivityPub::Serializer
 
   context_extensions :manually_approves_followers, :featured, :also_known_as,
                      :moved_to, :property_value, :discoverable, :suspended,
-                     :memorial, :indexable, :attribution_domains, :profile_settings
+                     :memorial, :indexable, :attribution_domains, :profile_settings, :is_cat
 
   context_extensions :interaction_policies
 
@@ -20,6 +20,7 @@ class ActivityPub::ActorSerializer < ActivityPub::Serializer
              :show_featured, :show_media
 
   attribute :show_media_replies, key: :show_replies_in_media
+  attribute :cat, key: :is_cat
 
   attribute :interaction_policy
   attribute :featured_collections

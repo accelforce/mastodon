@@ -38,7 +38,7 @@ class StatusEdit < ApplicationRecord
 
   scope :ordered, -> { order(id: :asc) }
 
-  delegate :local?, :application, :edited?, :edited_at,
+  delegate :local?, :cat?, :application, :edited?, :edited_at,
            :discarded?, :reply?, :visibility, :language, to: :status
 
   def quote

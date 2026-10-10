@@ -20,6 +20,25 @@ RSpec.describe REST::StatusSerializer do
   let(:status) { Fabricate(:status, account: alice) }
 
   context 'with a local status' do
+    context 'with a Cat author' do
+      let(:alice) { Fabricate(:account, username: 'alice', cat: true) }
+      let(:status) { Fabricate(:status, account: alice, text: 'な 나', spoiler_text: 'な', language: 'en') }
+
+      it 'converts content independently of language while preserving the editing source and CW' do
+        expect(subject).to include('content' => '<p>にゃ 냐</p>', 'spoiler_text' => 'な', 'account' => a_hash_including('cat' => true))
+        expect(serialized_record_json(status, REST::StatusSourceSerializer)).to include('text' => 'な 나')
+        expect(status.reload.text).to eq 'な 나'
+      end
+
+      context 'when the author disables Cat status' do
+        before { alice.update!(cat: false) }
+
+        it 'renders the original body' do
+          expect(subject).to include('content' => '<p>な 나</p>', 'account' => a_hash_including('cat' => false))
+        end
+      end
+    end
+
     context 'with a quote and a CW but no contents' do
       let(:quoted_status) { Fabricate(:status, account: alice) }
       let(:status) { Fabricate.build(:status, account: alice, text: '', spoiler_text: 'this is a CW') }
@@ -35,6 +54,14 @@ RSpec.describe REST::StatusSerializer do
             'spoiler_text' => 'this is a CW'
           )
       end
+
+      context 'with a Cat author' do
+        let(:alice) { Fabricate(:account, cat: true) }
+
+        it 'preserves the quote fallback' do
+          expect(subject['content']).to include('RE: <a', ActivityPub::TagManager.instance.url_for(quoted_status))
+        end
+      end
     end
   end
 
@@ -47,6 +74,15 @@ RSpec.describe REST::StatusSerializer do
         status_stat.favourites_count = 20
         status_stat.quotes_count = 15
         status_stat.save
+      end
+    end
+
+    context 'with a Cat author' do
+      let(:bob) { Fabricate(:account, username: 'bob', domain: 'other.com', cat: true) }
+      let(:status) { Fabricate(:status, account: bob, text: '<p>な 나</p>') }
+
+      it 'preserves received content and exposes Cat status' do
+        expect(subject).to include('content' => '<p>な 나</p>', 'account' => a_hash_including('cat' => true))
       end
     end
 

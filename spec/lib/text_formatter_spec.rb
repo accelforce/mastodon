@@ -8,6 +8,53 @@ RSpec.describe TextFormatter do
 
     let(:preloaded_accounts) { nil }
 
+    context 'with cat speech enabled' do
+      subject { described_class.new(text, cat_speech: true, preloaded_accounts: preloaded_accounts).to_s }
+
+      context 'with Japanese text' do
+        let(:text) { 'な ナ ﾅ <な>&' }
+
+        it 'converts kana and escapes HTML' do
+          expect(subject).to eq '<p>にゃ ニャ ﾆｬ &lt;にゃ&gt;&amp;</p>'
+        end
+      end
+
+      context 'with Korean text' do
+        let(:text) { ('나'..'낳').to_a.join }
+
+        it 'preserves every final consonant' do
+          expect(subject).to eq "<p>#{('냐'..'냫').to_a.join}</p>"
+        end
+      end
+
+      context 'with recognized entities between convertible text' do
+        let(:text) { 'な https://example.com/な?나=ナ な #な ＃나 な @alice@みんな.example な' }
+        let(:preloaded_accounts) { [] }
+
+        it 'preserves URLs, hashtags, and unresolved mentions without shifting their indices' do
+          expect(Nokogiri::HTML.fragment(subject).text).to eq 'にゃ https://example.com/な?나=ナ にゃ #な #나 にゃ @alice@みんな.example にゃ'
+          expect(subject).to include('href="https://example.com/な?나=ナ"', '/tags/%E3%81%AA', '/tags/%EB%82%98')
+        end
+      end
+
+      context 'with a recognized URI' do
+        let(:text) { 'な xmpp:alice@example.com?な な' }
+
+        it 'preserves the URI' do
+          expect(subject).to include('href="xmpp:alice@example.com?な"')
+          expect(Nokogiri::HTML.fragment(subject).text).to eq 'にゃ xmpp:alice@example.com?な にゃ'
+        end
+      end
+    end
+
+    context 'with cat speech disabled by default' do
+      let(:text) { 'な ナ ﾅ 나 낳' }
+
+      it 'preserves the original text' do
+        expect(subject).to eq '<p>な ナ ﾅ 나 낳</p>'
+      end
+    end
+
     context 'when given text containing plain text' do
       let(:text) { 'text' }
 

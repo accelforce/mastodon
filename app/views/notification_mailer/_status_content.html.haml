@@ -4,7 +4,7 @@
       = status.spoiler_text
 
   .email-status-prose
-    = status_content_format(status)
+    = status_content_format(status, cat_speech: status.cat?)
 
   - if status.ordered_media_attachments.size.positive?
     %p.email-status-media
