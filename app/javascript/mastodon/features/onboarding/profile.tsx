@@ -245,7 +245,7 @@ export const Profile: React.FC<{
 
           <div className='fields-group'>
             <TextAreaField
-              maxLength={500}
+              maxLength={512}
               label={
                 <FormattedMessage
                   id='onboarding.profile.note'
