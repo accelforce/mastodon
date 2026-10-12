@@ -19,7 +19,7 @@ import { Poll } from '../poll';
 
 import { useElementHandledLink } from './handled_link';
 
-const MAX_HEIGHT = 706; // 22px * 32 (+ 2px padding at the top)
+const MAX_HEIGHT = 354; // 22px * 16 (+ 2px padding at the top)
 
 export const StatusContent: React.FC<{
   statusId: string;

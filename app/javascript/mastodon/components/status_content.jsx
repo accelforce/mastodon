@@ -20,7 +20,7 @@ import { injectIntl } from './intl';
 import { HandledLink } from './status/handled_link';
 import { compareUrls } from '../utils/compare_urls';
 
-const MAX_HEIGHT = 706; // 22px * 32 (+ 2px padding at the top)
+const MAX_HEIGHT = 354; // 22px * 16 (+ 2px padding at the top)
 
 /**
  *
