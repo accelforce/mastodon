@@ -386,14 +386,13 @@ class StatusActionBar extends ImmutablePureComponent {
 
     const bookmarkTitle = intl.formatMessage(status.get('bookmarked') ? messages.removeBookmark : messages.bookmark);
     const favouriteTitle = intl.formatMessage(status.get('favourited') ? messages.removeFavourite : messages.favourite);
-    const isReply = status.get('in_reply_to_account_id') === status.getIn(['account', 'id']);
 
     const shouldShowQuoteRemovalHint = isQuotingMe && contextType === 'notifications';
 
     return (
       <div className='status__action-bar'>
         <div className='status__action-bar__button-wrapper'>
-          <IconButton className='status__action-bar__button' title={replyTitle} icon={isReply ? 'reply' : replyIcon} iconComponent={isReply ? ReplyIcon : replyIconComponent} onClick={this.handleReplyClick} counter={status.get('replies_count')} />
+          <IconButton className='status__action-bar__button' title={replyTitle} icon={replyIcon} iconComponent={replyIconComponent} onClick={this.handleReplyClick} counter={status.get('replies_count')} />
         </div>
         <div className='status__action-bar__button-wrapper'>
           <BoostButton statusId={status.get('id')} counters={withCounters} />
