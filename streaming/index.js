@@ -269,7 +269,7 @@ const startServer = async () => {
 
   /**
    * @param {string[]} channels
-   * @returns {function(): void}
+   * @returns {() => void}
    */
   const subscriptionHeartbeat = channels => {
     const interval = 6 * 60;
@@ -660,9 +660,10 @@ const startServer = async () => {
    * @param {boolean} options.needsFiltering
    * @param {boolean=} options.filterLocal
    * @param {boolean=} options.filterRemote
+   * @param {boolean=} options.onlyMedia
    * @returns {SubscriptionListener}
    */
-  const streamFrom = (channelIds, req, log, output, attachCloseHandler, destinationType, { needsFiltering, filterLocal, filterRemote } = { needsFiltering: false, filterLocal: false, filterRemote: false }) => {
+  const streamFrom = (channelIds, req, log, output, attachCloseHandler, destinationType, { needsFiltering, filterLocal, filterRemote, onlyMedia } = { needsFiltering: false, filterLocal: false, filterRemote: false }) => {
     log.info({ channelIds }, `Starting stream`);
 
     /**
@@ -710,6 +711,11 @@ const startServer = async () => {
 
       // The rest of the logic from here on in this function is to handle
       // filtering of statuses:
+
+      // @ts-expect-error
+      if (onlyMedia && payload.media_attachments.length === 0) {
+        return;
+      }
 
       const localPayload = payload.account.username === payload.account.acct;
       if (localPayload ? filterLocal : filterRemote) {
@@ -1068,19 +1074,20 @@ const startServer = async () => {
    * @param {Request} req
    * @param {string} name
    * @param {StreamParams} params
-   * @returns {Promise.<{ channelIds: string[], options: { needsFiltering: boolean, filterLocal?: boolean, filterRemote?: boolean } }>}
+   * @returns {Promise.<{ channelIds: string[], options: { needsFiltering: boolean, filterLocal?: boolean, filterRemote?: boolean, onlyMedia?: boolean } }>}
    */
   const channelNameToIds = (req, name, params) => new Promise((resolve, reject) => {
     /**
      * @param {string} feedKind
      * @param {string} channelId
-     * @param {{ needsFiltering: boolean }} options
+     * @param {{ needsFiltering: boolean, onlyMedia?: boolean }} options
+     * @param {boolean} [requireLocalAccess]
      */
-    const resolveFeed = (feedKind, channelId, options) => {
+    const resolveFeed = (feedKind, channelId, options, requireLocalAccess = false) => {
       getFeedAccessSettings(feedKind, req).then(({ localAccess, remoteAccess }) => {
         resolve({
           channelIds: [channelId],
-          options: { ...options, filterLocal: !localAccess, filterRemote: !remoteAccess },
+          options: { ...options, filterLocal: !localAccess, filterRemote: !remoteAccess || (requireLocalAccess && !localAccess) },
         });
       }).catch(() => {
         reject(new Error('Error getting feed access settings'));
@@ -1106,7 +1113,7 @@ const startServer = async () => {
       resolveFeed('public', 'timeline:public', { needsFiltering: true });
       break;
     case 'public:local':
-      resolveFeed('public', 'timeline:public:local', { needsFiltering: true });
+      resolveFeed('public', 'timeline:hashtag:nitiasa', { needsFiltering: true }, true);
       break;
     case 'public:remote':
       resolveFeed('public', 'timeline:public:remote', { needsFiltering: true });
@@ -1115,7 +1122,7 @@ const startServer = async () => {
       resolveFeed('public', 'timeline:public:media', { needsFiltering: true });
       break;
     case 'public:local:media':
-      resolveFeed('public', 'timeline:public:local:media', { needsFiltering: true });
+      resolveFeed('public', 'timeline:hashtag:nitiasa', { needsFiltering: true, onlyMedia: true }, true);
       break;
     case 'public:remote:media':
       resolveFeed('public', 'timeline:public:remote:media', { needsFiltering: true });
@@ -1186,7 +1193,7 @@ const startServer = async () => {
    * @property {import('ws').WebSocket & { isAlive: boolean}} websocket
    * @property {Request} request
    * @property {import('pino').Logger} logger
-   * @property {Object.<string, { channelName: string, listener: SubscriptionListener, stopHeartbeat: function(): void }>} subscriptions
+   * @property {Object.<string, { channelName: string, channelIds?: string[], listener: SubscriptionListener, stopHeartbeat: () => void }>} subscriptions
    */
 
   /**
@@ -1200,7 +1207,8 @@ const startServer = async () => {
       channelIds,
       options,
     }) => {
-      if (subscriptions[channelIds.join(';')]) {
+      const subscriptionKey = [channelName, ...channelIds].join(';');
+      if (subscriptions[subscriptionKey]) {
         return;
       }
 
@@ -1210,8 +1218,9 @@ const startServer = async () => {
 
       metrics.connectedChannels.labels({ type: 'websocket', channel: channelName }).inc();
 
-      subscriptions[channelIds.join(';')] = {
+      subscriptions[subscriptionKey] = {
         channelName,
+        channelIds,
         listener,
         stopHeartbeat,
       };
@@ -1232,16 +1241,17 @@ const startServer = async () => {
 
   /**
    * @param {WebSocketSession} session
-   * @param {string[]} channelIds
+   * @param {string} subscriptionKey
    */
-  const removeSubscription = ({ request, logger, subscriptions }, channelIds) => {
-    logger.info({ channelIds, accountId: request.accountId }, `Ending stream`);
-
-    const subscription = subscriptions[channelIds.join(';')];
+  const removeSubscription = ({ request, logger, subscriptions }, subscriptionKey) => {
+    const subscription = subscriptions[subscriptionKey];
 
     if (!subscription) {
       return;
     }
+
+    const channelIds = subscription.channelIds || [subscriptionKey];
+    logger.info({ channelIds, accountId: request.accountId }, `Ending stream`);
 
     channelIds.forEach(channelId => {
       unsubscribe(channelId, subscription.listener);
@@ -1250,7 +1260,7 @@ const startServer = async () => {
     metrics.connectedChannels.labels({ type: 'websocket', channel: subscription.channelName }).dec();
     subscription.stopHeartbeat();
 
-    delete subscriptions[channelIds.join(';')];
+    delete subscriptions[subscriptionKey];
   };
 
   /**
@@ -1263,7 +1273,7 @@ const startServer = async () => {
     const { websocket, request, logger } = session;
 
     channelNameToIds(request, channelName, params).then(({ channelIds }) => {
-      removeSubscription(session, channelIds);
+      removeSubscription(session, [channelName, ...channelIds].join(';'));
     }).catch(err => {
       logger.error({err}, 'Websocket unsubscribe error');
 
@@ -1338,8 +1348,8 @@ const startServer = async () => {
     ws.on('close', function onWebsocketClose() {
       const subscriptions = Object.keys(session.subscriptions);
 
-      subscriptions.forEach(channelIds => {
-        removeSubscription(session, channelIds.split(';'));
+      subscriptions.forEach(subscriptionKey => {
+        removeSubscription(session, subscriptionKey);
       });
 
       // Decrement the metrics for connected clients:

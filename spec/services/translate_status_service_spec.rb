@@ -11,6 +11,18 @@ RSpec.describe TranslateStatusService do
   let(:poll) { nil }
   let(:media_attachments) { [] }
 
+  let(:default_hashtag_link) do
+    <<~HTML.squish
+      <a href="https://#{Rails.configuration.x.local_domain}/tags/nitiasa" class="mention hashtag" rel="tag">#<span>nitiasa</span></a>
+    HTML
+  end
+
+  let(:translated_default_hashtag_link) do
+    <<~HTML.squish
+      <a href="https://#{Rails.configuration.x.local_domain}/tags/nitiasa" class="mention hashtag" rel="nofollow noopener" target="_blank">#<span>nitiasa</span></a>
+    HTML
+  end
+
   before do
     Fabricate(:custom_emoji, shortcode: 'highfive')
   end
@@ -35,7 +47,7 @@ RSpec.describe TranslateStatusService do
     it 'returns translated status content and source language and provider and original status' do
       expect(service.call(status, 'es'))
         .to have_attributes(
-          content: '<p>Hola</p>',
+          content: "<p>Hola #{translated_default_hashtag_link}</p>",
           detected_source_language: 'en',
           language: 'es',
           provider: 'Dummy',
@@ -47,7 +59,7 @@ RSpec.describe TranslateStatusService do
       let(:text) { 'Hello & :highfive:' }
 
       it 'does not translate shortcode' do
-        expect(service.call(status, 'es').content).to eq '<p>Hola &amp; :highfive:</p>'
+        expect(service.call(status, 'es').content).to eq "<p>Hola &amp; :highfive: #{translated_default_hashtag_link}</p>"
       end
     end
 
@@ -121,7 +133,7 @@ RSpec.describe TranslateStatusService do
 
     describe 'status only has content' do
       it 'returns formatted content' do
-        expect(service.send(:source_texts)).to eq({ content: '<p>Hello</p>' })
+        expect(service.send(:source_texts)).to eq({ content: "<p>Hello #{default_hashtag_link}</p>" })
       end
     end
 
@@ -130,7 +142,7 @@ RSpec.describe TranslateStatusService do
 
       it 'returns formatted content' do
         source_texts = service.send(:source_texts)
-        expect(source_texts[:content]).to eq '<p>Hello <span translate="no">:highfive:</span></p>'
+        expect(source_texts[:content]).to eq %(<p>Hello <span translate="no">:highfive:</span> #{default_hashtag_link}</p>)
       end
     end
 
@@ -163,7 +175,7 @@ RSpec.describe TranslateStatusService do
           expect(source_texts)
             .to have_attributes(
               size: 3,
-              values: %w(<p>Hello</p> Blue Green),
+              values: ["<p>Hello #{default_hashtag_link}</p>", 'Blue', 'Green'],
               keys: contain_exactly(
                 eq(:content),
                 be_a(Poll::Option).and(have_attributes(id: '0', title: 'Blue')),

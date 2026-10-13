@@ -17,6 +17,12 @@ RSpec.describe PushUpdateWorker do
       let(:account) { Fabricate :account }
       let(:status) { Fabricate :status, text: 'Test Post' }
 
+      let(:rendered_content) do
+        <<~HTML.squish
+          <p>Test Post <a href="https://#{Rails.configuration.x.local_domain}/tags/nitiasa" class="mention hashtag" rel="tag">#<span>nitiasa</span></a></p>
+        HTML
+      end
+
       before { allow(redis).to receive(:publish) }
 
       it 'pushes message to timeline' do
@@ -31,7 +37,7 @@ RSpec.describe PushUpdateWorker do
               event: 'update',
               payload: include(
                 created_at: status.created_at.iso8601(3),
-                content: eq('<p>Test Post</p>')
+                content: eq(rendered_content)
               )
             )
           )

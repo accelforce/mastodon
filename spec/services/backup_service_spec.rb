@@ -15,6 +15,12 @@ RSpec.describe BackupService do
   let!(:more_bookmark)  { Fabricate(:bookmark, account: user.account) }
   let!(:backup)         { Fabricate(:backup, user: user) }
 
+  let(:default_hashtag_link) do
+    <<~HTML.squish
+      <a href="https://#{Rails.configuration.x.local_domain}/tags/nitiasa" class="mention hashtag" rel="tag">#<span>nitiasa</span></a>
+    HTML
+  end
+
   def read_zip_file(backup, filename)
     file = Paperclip.io_adapters.for(backup.dump)
     Zip::File.open(file) do |zipfile|
@@ -67,8 +73,8 @@ RSpec.describe BackupService do
       expect(json['type']).to eq 'OrderedCollection'
       expect(json['totalItems']).to eq 2
       expect(json['orderedItems'][0]['@context']).to be_nil
-      expect(json['orderedItems'][0]).to include_create_item(status)
-      expect(json['orderedItems'][1]).to include_create_item(private_status)
+      expect(json['orderedItems'][0]).to include_create_item(status, content: "<p>Hello #{default_hashtag_link}</p>")
+      expect(json['orderedItems'][1]).to include_create_item(private_status, content: '<p>secret</p>')
     end
   end
 
@@ -104,12 +110,12 @@ RSpec.describe BackupService do
     JSON.parse(export_json_raw(type))
   end
 
-  def include_create_item(status)
+  def include_create_item(status, content:)
     include({
       'type' => 'Create',
       'object' => include({
         'id' => ActivityPub::TagManager.instance.uri_for(status),
-        'content' => "<p>#{status.text}</p>",
+        'content' => content,
       }),
     })
   end

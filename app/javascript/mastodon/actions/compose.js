@@ -282,7 +282,9 @@ export function submitCompose(successCallback) {
       }
 
       if (statusId === null && response.data.in_reply_to_id === null && response.data.visibility === 'public') {
-        insertIfOnline('community');
+        if (response.data.tags.some(tag => tag.name === 'nitiasa')) {
+          insertIfOnline('community');
+        }
         insertIfOnline('public');
         insertIfOnline(`account:${response.data.account.id}`);
       }

@@ -9,6 +9,46 @@ RSpec.describe '/api/v1/statuses' do
     let(:client_app) { Fabricate(:application, name: 'Test app', website: 'http://testapp.com') }
     let(:token) { Fabricate(:accessible_access_token, resource_owner_id: user.id, application: client_app, scopes: scopes) }
 
+    context 'with an automatically tagged post' do
+      let(:scopes) { 'read:statuses write:statuses' }
+      let(:text) { 'a' * StatusLengthValidator::MAX_CHARS }
+      let(:status_id) { response.parsed_body[:id] }
+
+      before do
+        post '/api/v1/statuses', headers: headers, params: { status: text, visibility: 'public' }
+      end
+
+      it 'renders the default hashtag and exposes its relation while storing only the input' do
+        expect(response).to have_http_status(200)
+        expect(Nokogiri::HTML.fragment(response.parsed_body[:content]).text).to eq "#{text} #nitiasa"
+        expect(response.parsed_body[:tags]).to contain_exactly(a_hash_including(name: 'nitiasa'))
+        expect(Status.find(status_id).text).to eq text
+      end
+
+      it 'returns an editable source within the advertised input limit' do
+        id = status_id
+        get "/api/v1/statuses/#{id}/source", headers: headers
+
+        expect(response).to have_http_status(200)
+        expect(response.parsed_body[:text]).to eq text
+
+        edited_text = "#{response.parsed_body[:text][0...-1]}b"
+        put "/api/v1/statuses/#{id}", headers: headers, params: { status: edited_text }
+
+        expect(response).to have_http_status(200)
+        expect(Status.find(id).text).to eq edited_text
+        expect(Nokogiri::HTML.fragment(response.parsed_body[:content]).text).to eq "#{edited_text} #nitiasa"
+      end
+
+      it 'returns only the input text for delete and redraft' do
+        id = status_id
+        delete "/api/v1/statuses/#{id}", headers: headers
+
+        expect(response).to have_http_status(200)
+        expect(response.parsed_body[:text]).to eq text
+      end
+    end
+
     describe 'GET /api/v1/statuses?id[]=:id' do
       let(:status) { Fabricate(:status) }
       let(:other_status) { Fabricate(:status) }

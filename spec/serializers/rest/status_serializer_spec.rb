@@ -34,6 +34,8 @@ RSpec.describe REST::StatusSerializer do
             'content' => /RE: <a/,
             'spoiler_text' => 'this is a CW'
           )
+        expect(Nokogiri::HTML.fragment(subject['content']).text).to include '#nitiasa'
+        expect(status.text).to eq ''
       end
     end
   end

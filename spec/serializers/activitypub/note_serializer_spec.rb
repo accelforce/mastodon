@@ -27,6 +27,17 @@ RSpec.describe ActivityPub::NoteSerializer do
     })
   end
 
+  context 'with an automatically tagged post' do
+    let(:parent) { PostStatusService.new.call(account, text: 'Hello', language: 'zh-TW') }
+
+    it 'includes the hashtag in content and tag metadata without modifying the stored text' do
+      expect(Nokogiri::HTML.fragment(subject['content']).text).to eq 'Hello #nitiasa'
+      expect(subject['contentMap']['zh-TW']).to eq subject['content']
+      expect(subject['tag']).to include(a_hash_including('type' => 'Hashtag', 'name' => '#nitiasa'))
+      expect(parent.reload.text).to eq 'Hello'
+    end
+  end
+
   def replies_collection_values
     include(
       'type' => eql('Collection'),

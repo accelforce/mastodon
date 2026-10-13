@@ -212,8 +212,29 @@ RSpec.describe UpdateStatusService do
     it 'changes tags' do
       subject.call(status, status.account_id, text: 'Hello #bar')
 
-      expect(status.tags.pluck(:name)).to eq %w(bar)
+      expect(status.tags.pluck(:name)).to contain_exactly('bar', 'nitiasa')
     end
+  end
+
+  it 'preserves the full input allowance and records only the input text in history' do
+    status = PostStatusService.new.call(Fabricate(:account), text: 'Before')
+    text = 'a' * StatusLengthValidator::MAX_CHARS
+
+    subject.call(status, status.account_id, text: text)
+
+    expect(status.reload.text).to eq text
+    expect(status.tags.pluck(:name)).to contain_exactly('nitiasa')
+    expect(status.edits.ordered.pluck(:text)).to eq ['Before', text]
+  end
+
+  it 'lets the author opt out when editing a post' do
+    status = PostStatusService.new.call(Fabricate(:account), text: 'Before')
+
+    subject.call(status, status.account_id, text: 'After #notag')
+
+    expect(status.reload.text).to eq 'After #notag'
+    expect(status.tags.pluck(:name)).to contain_exactly('notag')
+    expect(status.edits.ordered.pluck(:text)).to eq ['Before', 'After #notag']
   end
 
   it 'notifies ActivityPub about the update' do

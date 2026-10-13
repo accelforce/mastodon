@@ -18,6 +18,7 @@ RSpec.describe PublishScheduledStatusWorker do
 
       it 'creates a status and removes scheduled record' do
         expect(scheduled_status.account.statuses.first.text).to eq 'Hello world, future!'
+        expect(scheduled_status.account.statuses.first.tags.pluck(:name)).to contain_exactly('nitiasa')
         expect(scheduled_status.account.statuses.first.quote).to_not be_nil
 
         expect(ScheduledStatus.find_by(id: scheduled_status.id)).to be_nil

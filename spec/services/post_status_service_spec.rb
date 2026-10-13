@@ -13,6 +13,70 @@ RSpec.describe PostStatusService do
 
     expect(status).to be_persisted
     expect(status.text).to eq text
+    expect(status.tags.pluck(:name)).to contain_exactly('nitiasa')
+  end
+
+  context 'with the default community hashtag' do
+    let(:account) { Fabricate(:account) }
+
+    it 'adds the default hashtag alongside other hashtags' do
+      status = subject.call(account, text: 'Hello #other')
+
+      expect(status.reload.text).to eq 'Hello #other'
+      expect(status.tags.pluck(:name)).to contain_exactly('other', 'nitiasa')
+    end
+
+    ['Hello #nitiasa', 'Hello #NITIASA', 'Hello ＃nitiasa', 'Hello #ｎｉｔｉａｓａ', 'Hello #notag', 'Hello #NOTAG', 'Hello #notag #nitiasa'].each do |text|
+      it "preserves explicitly tagged text: #{text}" do
+        status = subject.call(account, text: text)
+
+        expect(status.reload.text).to eq text
+      end
+    end
+
+    %i(unlisted private direct).each do |visibility|
+      it "does not automatically tag #{visibility} posts" do
+        status = subject.call(account, text: 'Hello', visibility: visibility)
+
+        expect(status.reload.text).to eq 'Hello'
+        expect(status.tags).to be_empty
+      end
+    end
+
+    it 'accepts the full input allowance without storing the default hashtag in the text' do
+      text = 'a' * StatusLengthValidator::MAX_CHARS
+      status = subject.call(account, text: text)
+
+      expect(status.reload.text).to eq text
+      expect(status.tags.pluck(:name)).to contain_exactly('nitiasa')
+      expect(status).to be_valid
+    end
+
+    it 'still rejects input over the character limit' do
+      expect { subject.call(account, text: 'a' * (StatusLengthValidator::MAX_CHARS + 1)) }
+        .to raise_error(ActiveRecord::RecordInvalid)
+    end
+
+    it 'does not turn an empty input into a valid post' do
+      expect { subject.call(account, text: '') }
+        .to raise_error(ActiveRecord::RecordInvalid)
+    end
+
+    it 'tags media-only posts' do
+      media = Fabricate(:media_attachment, account: account)
+      status = subject.call(account, text: '', media_ids: [media.id.to_s])
+
+      expect(status.reload.text).to eq ''
+      expect(status.tags.pluck(:name)).to contain_exactly('nitiasa')
+    end
+
+    it 'preserves the content warning of a quote with no input text' do
+      quoted_status = Fabricate(:status, account: account)
+      status = subject.call(account, text: '', spoiler_text: 'CW', quoted_status: quoted_status)
+
+      expect(status.reload).to have_attributes(text: '', spoiler_text: 'CW')
+      expect(status.tags.pluck(:name)).to contain_exactly('nitiasa')
+    end
   end
 
   it 'creates a new response status' do
@@ -25,6 +89,7 @@ RSpec.describe PostStatusService do
     expect(status).to be_persisted
     expect(status.text).to eq text
     expect(status.thread).to eq in_reply_to_status
+    expect(status.tags).to be_empty
   end
 
   context 'when scheduling a status' do

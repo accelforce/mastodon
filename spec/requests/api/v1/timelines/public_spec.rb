@@ -30,6 +30,8 @@ RSpec.describe 'Public' do
     let(:params) { {} }
 
     before do
+      tag = Fabricate(:tag, name: 'nitiasa')
+      [local_status, remote_status, media_status].each { |status| status.tags << tag }
       Fabricate(:status, visibility: :private)
     end
 
@@ -50,9 +52,21 @@ RSpec.describe 'Public' do
 
       context 'with local param' do
         let(:params) { { local: true } }
-        let(:expected_statuses) { [local_status, media_status] }
+        let(:expected_statuses) { [local_status, remote_status, media_status] }
+
+        before do
+          Fabricate(:status, text: 'Not in the community #notag')
+          Fabricate(:status, account: Fabricate(:account, domain: 'untagged.example'))
+        end
 
         it_behaves_like 'a successful request to the public timeline'
+
+        context 'with only_media param' do
+          let(:params) { { local: true, only_media: true } }
+          let(:expected_statuses) { [media_status] }
+
+          it_behaves_like 'a successful request to the public timeline'
+        end
       end
 
       context 'with remote param' do

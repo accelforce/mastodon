@@ -42,6 +42,8 @@ class Api::V1::Timelines::PublicController < Api::V1::Timelines::BaseController
   end
 
   def public_feed
+    return CommunityFeed.new(current_account, only_media: truthy_param?(:only_media)) if truthy_param?(:local) && !truthy_param?(:remote)
+
     PublicFeed.new(
       current_account,
       local: truthy_param?(:local),

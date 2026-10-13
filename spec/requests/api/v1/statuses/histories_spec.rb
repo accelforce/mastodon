@@ -22,6 +22,22 @@ RSpec.describe 'API V1 Statuses Histories' do
           .to start_with('application/json')
         expect(response.parsed_body.size).to_not be 0
       end
+
+      context 'with an automatically tagged post edited to opt out' do
+        let(:status) do
+          PostStatusService.new.call(user.account, text: 'Before', spoiler_text: 'First CW').tap do |status|
+            UpdateStatusService.new.call(status, user.account.id, text: 'After #notag', spoiler_text: 'Second CW')
+          end
+        end
+
+        it 'formats each historical body independently and preserves the raw snapshots' do
+          expect(response).to have_http_status(200)
+          expect(response.parsed_body.pluck(:content).map { |content| Nokogiri::HTML.fragment(content).text })
+            .to eq ['Before #nitiasa', 'After #notag']
+          expect(response.parsed_body.pluck(:spoiler_text)).to eq ['First CW', 'Second CW']
+          expect(status.edits.ordered.pluck(:text)).to eq ['Before', 'After #notag']
+        end
+      end
     end
   end
 end

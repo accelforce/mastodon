@@ -4,7 +4,7 @@ class ProcessHashtagsService < BaseService
   def call(status, raw_tags = [])
     @status        = status
     @account       = status.account
-    @raw_tags      = status.local? ? Extractor.extract_hashtags(status.text) : raw_tags
+    @raw_tags      = status.local? ? DefaultHashtag.tags(status) : raw_tags
     @previous_tags = status.tags.to_a
     @current_tags  = []
 
