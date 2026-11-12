@@ -51,7 +51,7 @@ class AccountStatusesFilter
     visibilities << :unleakable if account.following?(current_account)
 
     mentioned_scope = scope.where(mentions: { account_id: current_account.id })
-    mentioned_scope = mentioned_scope.unleakable_visibility if exclude_direct?
+    mentioned_scope = mentioned_scope.where(visibility: %i(private unleakable)) if exclude_direct?
 
     scope = scope.where(visibility: visibilities).or(mentioned_scope).group(Status.arel_table[:id])
 
